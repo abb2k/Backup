@@ -133,6 +133,7 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
 
     this->setKeypadEnabled(true);
     this->setTouchEnabled(true);
+    this->setTouchPriority(10);
 
     return true;
 }

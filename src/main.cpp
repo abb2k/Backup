@@ -2,23 +2,48 @@
 #include <Geode/modify/MenuLayer.hpp>
 #include <BackupsLayer.h>
 #include <Geode/modify/GameManager.hpp>
+#include <Geode/modify/OptionsLayer.hpp>
 
 class $modify(_MenuLayer, MenuLayer) {
 	bool init() {
         if (!MenuLayer::init()) return false;
 
-		auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
+        if (!Mod::get()->getSettingValue<bool>("Button_In_Options_Menu")){
+            auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
 
-        auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(_MenuLayer::OpenBackupsLayerButton));
-        button->setZOrder(-1);
+            auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(_MenuLayer::OpenBackupsLayerButton));
+            button->setZOrder(-1);
 
-		auto menu = static_cast<CCMenu*>(this->getChildByID("right-side-menu"));
-        menu->setPositionY(menu->getPositionY() - sprite->getContentSize().height / 2);
+            auto menu = static_cast<CCMenu*>(this->getChildByID("right-side-menu"));
+            menu->setPositionY(menu->getPositionY() - sprite->getContentSize().height / 2);
 
-		menu->addChild(button);
-        menu->updateLayout();
-        
+            menu->addChild(button);
+            menu->updateLayout();
+        }
+
         return true;
+    }
+
+	void OpenBackupsLayerButton(CCObject* target) {
+        BackupsLayer::create()->show(this);
+    }
+};
+
+class $modify(_OptionsLayer, OptionsLayer) {
+	void customSetup() {
+        OptionsLayer::customSetup();
+        
+        if (Mod::get()->getSettingValue<bool>("Button_In_Options_Menu")){
+            auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
+
+            auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(_OptionsLayer::OpenBackupsLayerButton));
+            button->setPosition({138, -171});
+
+            auto menu = CCMenu::create();
+
+            menu->addChild(button);
+            this->m_listLayer->addChild(menu);
+        }
     }
 
 	void OpenBackupsLayerButton(CCObject* target) {
