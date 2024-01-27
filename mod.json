@@ -5,7 +5,7 @@
 	"id": "abb2k.backup",
 	"name": "Backup",
 	"developer": "abb2k",
-	"description": "",
+	"description": "a mod that allows you to easily backup your save file :D",
 
 	"settings": {
 		"Auto_Backup": {
