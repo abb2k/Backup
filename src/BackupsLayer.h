@@ -41,4 +41,6 @@ public:
     CCMenuItemSpriteExtra* addButton;
 
     void changeViewMode(CCObject* object);
+
+    void importBackup(CCObject* object);
 };

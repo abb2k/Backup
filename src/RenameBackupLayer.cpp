@@ -2,9 +2,9 @@
 #include "RenameBackupLayer.h"
 #include <BackupCell.h>
 
-RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, std::string cellBackupDir) {
+RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, BackupCell* cell) {
     auto ret = new RenameBackupLayer();
-    if (ret && ret->init(280, 97, _parentLayer, cellBackupDir, "GJ_square01.png")) {
+    if (ret && ret->init(280, 97, _parentLayer, cell, "GJ_square01.png")) {
         ret->autorelease();
     } else {
         delete ret;
@@ -13,13 +13,13 @@ RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, std::st
     return ret;
 }
 
-bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, std::string _cellBackupDir, const char* _spr){
+bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, BackupCell* cell, const char* _spr){
     //create window
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     CCSize size = {_w, _h};
 
     parentLayer = _parentLayer;
-    cellBackupDir = _cellBackupDir;
+    backupCell = cell;
 
     if (!this->initWithColor({0, 0, 0, 105})) return false;
     m_mainLayer = CCLayer::create();
@@ -44,13 +44,22 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, std
         menu_selector(RenameBackupLayer::backButtonCallback)
     );
     CloseButton->setUserData(reinterpret_cast<void*>(this));
-
     m_buttonMenu->addChild(CloseButton);
-
     CloseButton->setPosition(-_w / 2.1f, _h / 2.1f);
     CloseButton->setZOrder(1);
 
-    CCLabelBMFont* Label = CCLabelBMFont::create("Rename Backup", "bigFont.fnt");
+    //add export button
+    auto exportBackupSprite = CCSprite::createWithSpriteFrameName("accountBtn_myLevels_001.png");
+    auto exportBackupButton = CCMenuItemSpriteExtra::create(
+        exportBackupSprite,
+        nullptr,
+        this,
+        menu_selector(RenameBackupLayer::OnExport)
+    );
+    exportBackupButton->setPosition(_w / 2.1f, -_h / 2.1f);
+    m_buttonMenu->addChild(exportBackupButton);
+
+    CCLabelBMFont* Label = CCLabelBMFont::create("Backup Settings", "bigFont.fnt");
     Label->setPosition({285, 193});
     Label->setScale(0.75f);
     m_mainLayer->addChild(Label);
@@ -103,6 +112,17 @@ void RenameBackupLayer::show(CCNode* parent) {
     parent->addChild(this);  
 }
 
+void RenameBackupLayer::OnExport(CCObject* object){
+    exportAlert = FLAlertLayer::create(
+        this,
+        "Export Backup",
+        "Do you want to export\n \"" + backupCell->Name + "\"?",
+        "No",
+        "Yes"
+    );
+    exportAlert->show();
+}
+
 void RenameBackupLayer::keyBackClicked() {
     parentLayer->RefreshBackupsList();
     this->setKeyboardEnabled(false);
@@ -117,7 +137,7 @@ void RenameBackupLayer::DoneAndSave(CCObject* object){
     if (NameInput->getString() != ""){
         std::fstream file;
 
-        file.open(cellBackupDir + "\\Backup.dat");
+        file.open(backupCell->_folderPath + "/Backup.dat");
 
         if (!file.fail()){
             std::vector<std::string> lines;
@@ -131,7 +151,7 @@ void RenameBackupLayer::DoneAndSave(CCObject* object){
             if (0 <= lines.size()){
                 std::ofstream fileW;
 
-                fileW.open(cellBackupDir + "\\Backup.dat");
+                fileW.open(backupCell->_folderPath + "/Backup.dat");
 
                 if (!fileW.fail()){
                     for (int i = 0; i < lines.size(); i++)
@@ -172,5 +192,32 @@ void RenameBackupLayer::DoneAndSave(CCObject* object){
             "Please add a name to your backup.",
             "Back"
         )->show();
+    }
+}
+
+void RenameBackupLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
+    if (exportAlert == p0 && p1){
+        Result<std::vector<ghc::filesystem::path>> readBackups;
+        readBackups = file::readDirectory(backupCell->_folderPath);
+        std::string currFileData = "";
+        for (int i = 0; i < readBackups.value().size(); i++)
+        {
+            currFileData += file::readString(readBackups.value()[i]).value();
+            currFileData += "\n<>;";
+        }
+
+        std::ofstream exportFile(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"));
+
+        exportFile << currFileData;
+
+        exportFile.close();
+
+        FLAlertLayer::create(
+            "Exported!",
+            backupCell->Name + " was exported to\n" + Mod::get()->getSaveDir().string() + "/Backups/Exports",
+            "OK"
+        )->show();
+
+        keyBackClicked();
     }
 }

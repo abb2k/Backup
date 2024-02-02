@@ -48,12 +48,11 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     CloseButton->setPosition(-_w / 2.1f, _h / 2.1f);
 
     //create backups dir if doesnt exist
-    std::string fileName = "\\Backups";
-    std::filesystem::create_directory(Mod::get()->getSaveDir().string() + fileName);
-    BackupsDir = Mod::get()->getSaveDir().string() + fileName;
+    geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
+    BackupsDir = Mod::get()->getSaveDir().string() + "/Backups";
 
-    fileName += "\\Auto-Backups";
-    std::filesystem::create_directory(Mod::get()->getSaveDir().string() + fileName);
+    res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
+    res = file::createDirectory(Mod::get()->getSaveDir() / "Backups/Exports");
 
 
     //create the backups list
@@ -131,6 +130,17 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     modeButton->setPosition({164, 0});
     m_buttonMenu->addChild(modeButton);
 
+    //add import button
+    auto importBSprite = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
+    auto importButton = CCMenuItemSpriteExtra::create(
+        importBSprite,
+        nullptr,
+        this,
+        menu_selector(BackupsLayer::importBackup)
+    );
+    importButton->setPosition({208, 0});
+    m_buttonMenu->addChild(importButton);
+
     this->setKeypadEnabled(true);
     this->setTouchEnabled(true);
     this->setTouchPriority(10);
@@ -186,7 +196,7 @@ void BackupsLayer::RefreshBackupsList(){
     std::string noBUMessage;
 
     if (displayingAutos){
-        readBackups = file::readDirectory(BackupsDir + "\\Auto-Backups");
+        readBackups = file::readDirectory(BackupsDir + "/Auto-Backups");
         titleLol = "Auto Backups";
         noBUMessage = "You don't have any\nAuto Backups";
     }
@@ -202,7 +212,7 @@ void BackupsLayer::RefreshBackupsList(){
 
         std::string dataPath = readBackups.value()[i].string();
         std::string OriginCellPath = dataPath;
-        dataPath += "\\Backup.dat";
+        dataPath += "/Backup.dat";
         file.open(dataPath);
         if (file){
             BackupCell* cell = BackupCell::create(OriginCellPath, this, displayingAutos);
@@ -282,4 +292,87 @@ void BackupsLayer::changeViewMode(CCObject* object){
         addButton->setVisible(true);
     }
     RefreshBackupsList();
+}
+
+void BackupsLayer::importBackup(CCObject* object){
+    ghc::filesystem::path path;
+    file::FilePickOptions options;
+    options.defaultPath = Mod::get()->getSaveDir() / ("Backups/Exports");
+    file::FilePickOptions::Filter filterlol;
+    filterlol.description = "gdbackups";
+    std::unordered_set<std::string> set = {"*.gdbackup","*.gdbackup","*.gdbackup","*.gdbackup"};
+    filterlol.files = set;
+    std::vector<file::FilePickOptions::Filter> filters = {
+        filterlol
+    };
+    options.filters = filters;
+    Result<ghc::filesystem::path> res = file::pickFile(file::PickMode::OpenFile, options);
+    if (res){
+        path = res.value();
+    }
+    else{
+        return;
+    }
+
+    if (path.extension() == ".gdbackup"){
+        std::string st = file::readString(path).value();
+
+        std::vector<std::string> things;
+        std::string tempString = "";
+        for (int i = 0; i < st.size(); i++)
+        {
+            if (st[i] == '\n' && st[i + 1] == '<' && st[i + 2] == '>' && st[i + 3] == ';'){
+                i += 3;
+                tempString = tempString.substr(0, tempString.size()-1);
+                things.push_back(tempString);
+                tempString = "";
+            }
+            else{
+                tempString += st[i];
+            }
+        }
+
+        auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        const char* Time = std::ctime(&creationTime);
+        std::string t = Time;
+
+        for (size_t i = 0; i < t.length(); i++)
+        {
+            if (t[i] == ':'){
+                t[i] = '-';
+            }
+            if (t[i] == ' '){
+                t[i] = '_';
+            }
+        }
+        std::string mycurrDir = (Mod::get()->getSaveDir() / ("Backups/(Imported) -" + t)).string();
+        mycurrDir = mycurrDir.substr(0, mycurrDir.size()-1);
+        Result<> res = file::createDirectory(mycurrDir);
+
+        std::string filenames[] = {
+            "/Backup.dat",
+            "/CCGameManager.dat",
+            "/CCGameManager2.dat",
+            "/CCLocalLevels.dat",
+            "/CCLocalLevels2.dat"
+        };
+
+        for (int i = 0; i < things.size(); i++)
+        {
+            std::ofstream datfile(mycurrDir + filenames[i]);
+
+            datfile << things[i];
+
+            datfile.close();
+        }
+
+        RefreshBackupsList();
+    }
+    else{
+        FLAlertLayer::create(
+            "Import Failed!",
+            "Please choose a \".gdbackup\" file",
+            "OK"
+        )->show();
+    }
 }
