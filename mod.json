@@ -1,6 +1,9 @@
 {
 	"geode": "v2.0.0",
-	"gd": "*",
+    "gd": {
+        "android": "2.205",
+        "win": "2.204"
+    },
 	"version": "v1.0.3",
 	"id": "abb2k.backup",
 	"name": "Backup",

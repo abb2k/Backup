@@ -1,6 +1,6 @@
 # v1.0.3
 
- * fixed my code and auto backups
+ * fixed my code and auto backups! also added andorid support!! :D
 
 # v1.0.2
 
