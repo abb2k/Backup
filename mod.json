@@ -1,6 +1,6 @@
 {
 	"geode": "v2.0.0",
-	"gd": "2.204",
+	"gd": "*",
 	"version": "v1.0.3",
 	"id": "abb2k.backup",
 	"name": "Backup",

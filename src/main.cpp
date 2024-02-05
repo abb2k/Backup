@@ -71,7 +71,7 @@ class $modify(_myGameManager, GameManager){
 
             typedef struct {
                 ghc::filesystem::path path;
-                long long dateOfCreation;
+                std::chrono::milliseconds dateOfCreation;
             } backupWPath;
 
             std::vector<backupWPath> pathsWithTime;
@@ -80,16 +80,11 @@ class $modify(_myGameManager, GameManager){
             {
                 for (int i = 0; i < readBackups.value().size(); i++)
                 {
-                    std::string path_string = readBackups.value()[i].string();
-                    struct stat __stat;
-                    stat(path_string.c_str(), &__stat);
-                    struct tm* _time;
-                    _time = gmtime(&(__stat.st_ctime));
-                    
-                    std::string concatenatedDate = std::to_string(_time->tm_year) + std::to_string(_time->tm_mon) + std::to_string(_time->tm_mday) + std::to_string(_time->tm_hour) + std::to_string(_time->tm_min) + std::to_string(_time->tm_sec);
+                    auto Date = ghc::filesystem::last_write_time(readBackups.value()[i]);
+                    auto DateInMili = std::chrono::duration_cast<std::chrono::milliseconds>(Date.time_since_epoch());
 
                     backupWPath meRN;
-                    meRN.dateOfCreation = std::stoll(concatenatedDate);
+                    meRN.dateOfCreation = DateInMili;
                     meRN.path = readBackups.value()[i];
                     pathsWithTime.push_back(meRN);
                     
@@ -168,7 +163,7 @@ $execute
 
         typedef struct {
             ghc::filesystem::path path;
-            long long dateOfCreation;
+            std::chrono::milliseconds dateOfCreation;
         } backupWPath;
 
         std::vector<backupWPath> pathsWithTime;
@@ -177,16 +172,11 @@ $execute
         {
             for (int i = 0; i < readBackups.value().size(); i++)
             {
-                std::string path_string = readBackups.value()[i].string();
-                struct stat __stat;
-                stat(path_string.c_str(), &__stat);
-                struct tm* _time;
-                _time = gmtime(&(__stat.st_ctime));
-                    
-                 std::string concatenatedDate = std::to_string(_time->tm_year) + std::to_string(_time->tm_mon) + std::to_string(_time->tm_mday) + std::to_string(_time->tm_hour) + std::to_string(_time->tm_min) + std::to_string(_time->tm_sec);
+                auto Date = ghc::filesystem::last_write_time(readBackups.value()[i]);
+                auto DateInMili = std::chrono::duration_cast<std::chrono::milliseconds>(Date.time_since_epoch());
 
                 backupWPath meRN;
-                meRN.dateOfCreation = std::stoll(concatenatedDate);
+                meRN.dateOfCreation = DateInMili;
                 meRN.path = readBackups.value()[i];
                 pathsWithTime.push_back(meRN);
                     
