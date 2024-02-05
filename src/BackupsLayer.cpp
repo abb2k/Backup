@@ -49,7 +49,7 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
 
     //create backups dir if doesnt exist
     geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
-    BackupsDir = Mod::get()->getSaveDir().string() + "/Backups";
+    BackupsDir = Mod::get()->getSaveDir() / "Backups";
 
     res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
     res = file::createDirectory(Mod::get()->getSaveDir() / "Backups/Exports");
@@ -196,7 +196,7 @@ void BackupsLayer::RefreshBackupsList(){
     std::string noBUMessage;
 
     if (displayingAutos){
-        readBackups = file::readDirectory(BackupsDir + "/Auto-Backups");
+        readBackups = file::readDirectory(BackupsDir / "Auto-Backups");
         titleLol = "Auto Backups";
         noBUMessage = "You don't have any\nAuto Backups";
     }
@@ -210,9 +210,9 @@ void BackupsLayer::RefreshBackupsList(){
     {
         std::ifstream file;
 
-        std::string dataPath = readBackups.value()[i].string();
-        std::string OriginCellPath = dataPath;
-        dataPath += "/Backup.dat";
+        ghc::filesystem::path dataPath = readBackups.value()[i];
+        ghc::filesystem::path OriginCellPath = dataPath;
+        dataPath = dataPath / "Backup.dat";
         file.open(dataPath);
         if (file){
             BackupCell* cell = BackupCell::create(OriginCellPath, this, displayingAutos);
@@ -262,7 +262,7 @@ void BackupsLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
             CCARRAY_FOREACH(list->m_listView->m_entries, obj){
                 auto cell = static_cast<BackupCell*>(obj);
                 if (cell){
-                    if (cell->selected) std::filesystem::remove_all(cell->_folderPath);
+                    if (cell->selected) ghc::filesystem::remove_all(cell->_folderPath);
                 }
             }
             RefreshBackupsList();
@@ -272,7 +272,7 @@ void BackupsLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
 }
 
 void BackupsLayer::OpenFolder(CCObject* object){
-    ShellExecuteA(NULL, "open", BackupsDir.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+    file::openFolder(BackupsDir);
 }
 
 void BackupsLayer::openSettings(CCObject* object){
@@ -297,7 +297,7 @@ void BackupsLayer::changeViewMode(CCObject* object){
 void BackupsLayer::importBackup(CCObject* object){
     ghc::filesystem::path path;
     file::FilePickOptions options;
-    options.defaultPath = Mod::get()->getSaveDir() / ("Backups/Exports");
+    options.defaultPath = Mod::get()->getSaveDir() / "Backups/Exports";
     file::FilePickOptions::Filter filterlol;
     filterlol.description = "gdbackups";
     std::unordered_set<std::string> set = {"*.gdbackup","*.gdbackup","*.gdbackup","*.gdbackup"};
@@ -345,21 +345,21 @@ void BackupsLayer::importBackup(CCObject* object){
                 t[i] = '_';
             }
         }
-        std::string mycurrDir = (Mod::get()->getSaveDir() / ("Backups/(Imported) -" + t)).string();
-        mycurrDir = mycurrDir.substr(0, mycurrDir.size()-1);
+        t = t.substr(0, t.size()-1);
+        ghc::filesystem::path mycurrDir = Mod::get()->getSaveDir() / ("Backups/(Imported) -" + t);
         Result<> res = file::createDirectory(mycurrDir);
 
         std::string filenames[] = {
-            "/Backup.dat",
-            "/CCGameManager.dat",
-            "/CCGameManager2.dat",
-            "/CCLocalLevels.dat",
-            "/CCLocalLevels2.dat"
+            "Backup.dat",
+            "CCGameManager.dat",
+            "CCGameManager2.dat",
+            "CCLocalLevels.dat",
+            "CCLocalLevels2.dat"
         };
 
         for (int i = 0; i < things.size(); i++)
         {
-            std::ofstream datfile(mycurrDir + filenames[i]);
+            std::ofstream datfile(mycurrDir / filenames[i]);
 
             datfile << things[i];
 

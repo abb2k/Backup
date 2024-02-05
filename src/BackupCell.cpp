@@ -1,7 +1,7 @@
 #include "BackupCell.h"
 #include <RenameBackupLayer.h>
 
-BackupCell* BackupCell::create(std::string folderPath, BackupsLayer* mainLayer, bool autos) {
+BackupCell* BackupCell::create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos) {
     auto ret = new BackupCell();
     if (ret && ret->init(folderPath, mainLayer, autos)) {
         ret->autorelease();
@@ -12,7 +12,7 @@ BackupCell* BackupCell::create(std::string folderPath, BackupsLayer* mainLayer, 
     return ret;
 }
 
-bool BackupCell::init(std::string folderPath, BackupsLayer* _mainLayer, bool _autos){
+bool BackupCell::init(ghc::filesystem::path folderPath, BackupsLayer* _mainLayer, bool _autos){
 
     if (_autos){
         CCSprite* icon = CCSprite::createWithSpriteFrameName("diffIcon_auto_btn_001.png");
@@ -31,7 +31,7 @@ bool BackupCell::init(std::string folderPath, BackupsLayer* _mainLayer, bool _au
     autos = _autos;
 
     std::ifstream dataFile;
-    std::string dataPath = folderPath + "/Backup.dat";
+    ghc::filesystem::path dataPath = folderPath / "Backup.dat";
     dataFile.open(dataPath);
 
     if (dataFile){
@@ -172,19 +172,20 @@ void BackupCell::OnSelectedStateChanged(CCObject* object){
 void BackupCell::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
     if (p0 == deleteWarning){
         if (p1){
-            std::filesystem::remove_all(_folderPath);
+            ghc::filesystem::remove_all(_folderPath);
             mainLayer->RefreshBackupsList();
         }
     }
     if (p0 == loadWarning){
         if (p1){
-            std::string GDAPPDATAPATH = CCFileUtils::get()->getWritablePath();
+            std::string tempWPath = CCFileUtils::get()->getWritablePath();
+            ghc::filesystem::path GDAPPDATAPATH(tempWPath);
             geode::Result<> res;
-            res = geode::utils::file::writeString(GDAPPDATAPATH + "/CCGameManager.dat", geode::utils::file::readString(_folderPath + "/CCGameManager.dat").value());
-            res = geode::utils::file::writeString(GDAPPDATAPATH + "/CCGameManager2.dat", geode::utils::file::readString(_folderPath + "/CCGameManager2.dat").value());
+            res = geode::utils::file::writeString(GDAPPDATAPATH / "CCGameManager.dat", geode::utils::file::readString(_folderPath / "CCGameManager.dat").value());
+            res = geode::utils::file::writeString(GDAPPDATAPATH / "CCGameManager2.dat", geode::utils::file::readString(_folderPath / "CCGameManager2.dat").value());
 
-            res = geode::utils::file::writeString(GDAPPDATAPATH + "/CCLocalLevels.dat", geode::utils::file::readString(_folderPath + "/CCLocalLevels.dat").value());
-            res = geode::utils::file::writeString(GDAPPDATAPATH + "/CCLocalLevels2.dat", geode::utils::file::readString(_folderPath + "/CCLocalLevels2.dat").value());
+            res = geode::utils::file::writeString(GDAPPDATAPATH / "CCLocalLevels.dat", geode::utils::file::readString(_folderPath / "CCLocalLevels.dat").value());
+            res = geode::utils::file::writeString(GDAPPDATAPATH / "CCLocalLevels2.dat", geode::utils::file::readString(_folderPath / "CCLocalLevels2.dat").value());
 
             geode::utils::game::restart();
             abort();

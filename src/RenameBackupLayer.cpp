@@ -137,7 +137,7 @@ void RenameBackupLayer::DoneAndSave(CCObject* object){
     if (NameInput->getString() != ""){
         std::fstream file;
 
-        file.open(backupCell->_folderPath + "/Backup.dat");
+        file.open(backupCell->_folderPath / "Backup.dat");
 
         if (!file.fail()){
             std::vector<std::string> lines;
@@ -151,7 +151,7 @@ void RenameBackupLayer::DoneAndSave(CCObject* object){
             if (0 <= lines.size()){
                 std::ofstream fileW;
 
-                fileW.open(backupCell->_folderPath + "/Backup.dat");
+                fileW.open(backupCell->_folderPath / "Backup.dat");
 
                 if (!fileW.fail()){
                     for (int i = 0; i < lines.size(); i++)
@@ -214,7 +214,7 @@ void RenameBackupLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
 
         FLAlertLayer::create(
             "Exported!",
-            backupCell->Name + " was exported to\n" + Mod::get()->getSaveDir().string() + "/Backups/Exports",
+            backupCell->Name + " was exported to\n" + (Mod::get()->getSaveDir() / "Backups/Exports").string(),
             "OK"
         )->show();
 

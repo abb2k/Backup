@@ -118,7 +118,7 @@ void CreateBackupLayer::DoneAndSave(CCObject* object){
         auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         const char* Time = std::ctime(&creationTime);
         std::string t = Time;
-        std::string fileName = "/" + t;
+        std::string fileName = t;
         for (size_t i = 0; i < fileName.length(); i++)
         {
             if (fileName[i] == ':'){
@@ -129,24 +129,18 @@ void CreateBackupLayer::DoneAndSave(CCObject* object){
             }
         }
         fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.cend());
-        std::string fullpath = parentLayer->BackupsDir + fileName;
-        std::filesystem::create_directory(fullpath);
+        ghc::filesystem::path fullpath = parentLayer->BackupsDir / fileName;
+        Result<> res = file::createDirectory(fullpath);
 
-        std::string GDAPPDATAPATH = CCFileUtils::get()->getWritablePath();
+        std::string tempWPath = CCFileUtils::get()->getWritablePath();
+        ghc::filesystem::path GDAPPDATAPATH(tempWPath);
 
-        std::string CCManagerPath = GDAPPDATAPATH + "/CCGameManager.dat";
-        std::filesystem::copy(CCManagerPath, fullpath, std::filesystem::copy_options::overwrite_existing);
+        ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager.dat", fullpath);
+        ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager2.dat", fullpath);
+        ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels.dat", fullpath);
+        ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels2.dat", fullpath);
 
-        std::string CCManagerPath2 = GDAPPDATAPATH + "/CCGameManager2.dat";
-        std::filesystem::copy(CCManagerPath2, fullpath, std::filesystem::copy_options::overwrite_existing);
-
-        std::string CCLevelsPath = GDAPPDATAPATH + "/CCLocalLevels.dat";
-        std::filesystem::copy(CCLevelsPath, fullpath, std::filesystem::copy_options::overwrite_existing);
-
-        std::string CCLevelsPath2 = GDAPPDATAPATH + "/CCLocalLevels2.dat";
-        std::filesystem::copy(CCLevelsPath2, fullpath, std::filesystem::copy_options::overwrite_existing);
-
-        std::string dataPath = fullpath + "/Backup.dat";
+        ghc::filesystem::path dataPath = fullpath / "Backup.dat";
         std::ofstream bkData (dataPath);
 
         bkData << NameInput->getString().c_str() << std::endl;

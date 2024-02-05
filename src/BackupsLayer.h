@@ -23,7 +23,7 @@ public:
 
     CCNode* parent;
 
-    std::string BackupsDir;
+    ghc::filesystem::path BackupsDir;
 
     GJListLayer* list = nullptr;
 
