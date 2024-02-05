@@ -1,3 +1,7 @@
+# v1.0.3
+
+ * fixed my code and auto backups
+
 # v1.0.2
 
  * added the option to export and import backups and fixed some code
