@@ -328,11 +328,18 @@ void BackupsLayer::importBackup(CCObject* object){
         filterlol
     };
     options.filters = filters;
-    Result<ghc::filesystem::path> res = geode::utils::file::pickFile(file::PickMode::OpenFile, options);
-    if (res){
-        path = res.value();
+    
+    file::pickFile(file::PickMode::OpenFile, options, [this](ghc::filesystem::path path){
+        pickfileRes = path;
+    });
+    if (ghc::filesystem::exists(pickfileRes)){
+        path = pickfileRes;
+        ghc::filesystem::path tempNewPath;
+        pickfileRes = tempNewPath;
     }
     else{
+        ghc::filesystem::path tempNewPath;
+        pickfileRes = tempNewPath;
         return;
     }
 

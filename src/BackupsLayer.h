@@ -52,4 +52,6 @@ public:
     float DefaultScaleMultiplier;
 
     float GetFixedScale(float scale);
+
+    ghc::filesystem::path pickfileRes;
 };

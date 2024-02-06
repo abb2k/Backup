@@ -1,6 +1,6 @@
 # v1.0.3
 
- * fixed my code and auto backups! also added andorid support!! :D
+ * fixed my code, UI breaking on different resolutions and auto backups! also added andorid support!! :D (Importing backups is not yet supported for android)
 
 # v1.0.2
 
