@@ -19,8 +19,6 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     CCSize size = {_w, _h};
 
-    cb::write(std::to_string(winSize.height));
-
     if (!this->initWithColor({0, 0, 0, 105})) return false;
     m_mainLayer = CCLayer::create();
     this->addChild(m_mainLayer);
@@ -330,7 +328,7 @@ void BackupsLayer::importBackup(CCObject* object){
         filterlol
     };
     options.filters = filters;
-    Result<ghc::filesystem::path> res = file::pickFile(file::PickMode::OpenFile, options);
+    Result<ghc::filesystem::path> res = geode::utils::file::pickFile(file::PickMode::OpenFile, options);
     if (res){
         path = res.value();
     }

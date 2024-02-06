@@ -86,8 +86,9 @@ bool BackupCell::init(ghc::filesystem::path folderPath, BackupsLayer* _mainLayer
         DateOfCreationLabel->setScale(0.325f);
         this->addChild(DateOfCreationLabel);
 
+        auto winSize = CCDirector::sharedDirector()->getWinSize();
         buttonsM = CCMenu::create();
-        buttonsM->setPositionX(buttonsM->getPositionX() * mainLayer->DefaultScaleMultiplier);
+        buttonsM->setPositionX(buttonsM->getPositionX() * (569 / winSize.width));
         this->addChild(buttonsM);
 
         //delete backup button
