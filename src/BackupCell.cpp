@@ -1,9 +1,9 @@
 #include "BackupCell.h"
 #include <RenameBackupLayer.h>
 
-BackupCell* BackupCell::create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos) {
+BackupCell* BackupCell::create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize) {
     auto ret = new BackupCell();
-    if (ret && ret->init(folderPath, mainLayer, autos)) {
+    if (ret && ret->init(folderPath, mainLayer, autos, cellSize)) {
         ret->autorelease();
     } else {
         delete ret;
@@ -12,7 +12,7 @@ BackupCell* BackupCell::create(ghc::filesystem::path folderPath, BackupsLayer* m
     return ret;
 }
 
-bool BackupCell::init(ghc::filesystem::path folderPath, BackupsLayer* _mainLayer, bool _autos){
+bool BackupCell::init(ghc::filesystem::path folderPath, BackupsLayer* _mainLayer, bool _autos, CCSize cellSize){
 
     if (_autos){
         CCSprite* icon = CCSprite::createWithSpriteFrameName("diffIcon_auto_btn_001.png");
@@ -87,6 +87,7 @@ bool BackupCell::init(ghc::filesystem::path folderPath, BackupsLayer* _mainLayer
         this->addChild(DateOfCreationLabel);
 
         buttonsM = CCMenu::create();
+        buttonsM->setPositionX(buttonsM->getPositionX() * mainLayer->DefaultScaleMultiplier);
         this->addChild(buttonsM);
 
         //delete backup button

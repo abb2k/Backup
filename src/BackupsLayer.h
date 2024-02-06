@@ -40,7 +40,16 @@ public:
 
     CCMenuItemSpriteExtra* addButton;
 
+    CCScale9Sprite* bg;
+
     void changeViewMode(CCObject* object);
 
     void importBackup(CCObject* object);
+
+    float GetResFixedScale(float scale, bool width);
+    CCSize GetResFixedScale(CCSize scale, float multiplier = 1, bool devide = false, CCSize originSize = {569, 320});
+
+    float DefaultScaleMultiplier;
+
+    float GetFixedScale(float scale);
 };

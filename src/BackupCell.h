@@ -4,10 +4,10 @@
 
 class BackupCell : public CCNode, public FLAlertLayerProtocol {
 protected:
-    virtual bool init(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos);
+    virtual bool init(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize);
 
 public:
-    static BackupCell* create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos);
+    static BackupCell* create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize);
 
     ghc::filesystem::path _folderPath;
 

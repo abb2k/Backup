@@ -16,7 +16,6 @@ RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, BackupC
 bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, BackupCell* cell, const char* _spr){
     //create window
     auto winSize = CCDirector::sharedDirector()->getWinSize();
-    CCSize size = {_w, _h};
 
     parentLayer = _parentLayer;
     backupCell = cell;
@@ -26,7 +25,7 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
     this->addChild(m_mainLayer);
 
     CCScale9Sprite* bg = CCScale9Sprite::create(_spr, {0.0f, 0.0f, 80.0f, 80.0f});
-    bg->setContentSize(size);
+    bg->setContentSize(parentLayer->GetResFixedScale({_w, _h}));
     bg->setPosition(winSize.width / 2, winSize.height / 2);
     m_mainLayer->addChild(bg);
 
@@ -35,7 +34,7 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
 
     //create close window button
     auto CloseS = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
-    CloseS->setScale(1);
+    CloseS->setScale(parentLayer->GetFixedScale(1));
 
     auto CloseButton = CCMenuItemSpriteExtra::create(
         CloseS,
@@ -45,22 +44,24 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
     );
     CloseButton->setUserData(reinterpret_cast<void*>(this));
     m_buttonMenu->addChild(CloseButton);
-    CloseButton->setPosition(-_w / 2.1f, _h / 2.1f);
+    CloseButton->setPosition(parentLayer->GetResFixedScale({-_w, _h}, 2.1f, true));
     CloseButton->setZOrder(1);
 
     //add export button
     auto exportBackupSprite = CCSprite::createWithSpriteFrameName("accountBtn_myLevels_001.png");
+    exportBackupSprite->setScale(parentLayer->GetFixedScale(1));
     auto exportBackupButton = CCMenuItemSpriteExtra::create(
         exportBackupSprite,
         nullptr,
         this,
         menu_selector(RenameBackupLayer::OnExport)
     );
-    exportBackupButton->setPosition(_w / 2.1f, -_h / 2.1f);
+    exportBackupButton->setPosition(parentLayer->GetResFixedScale({_w, -_h}, 2.1f, true));
     m_buttonMenu->addChild(exportBackupButton);
+    CloseButton->setZOrder(1);
 
     CCLabelBMFont* Label = CCLabelBMFont::create("Backup Settings", "bigFont.fnt");
-    Label->setPosition({285, 193});
+    Label->setPosition(parentLayer->GetResFixedScale({285, 193}));
     Label->setScale(0.75f);
     m_mainLayer->addChild(Label);
 

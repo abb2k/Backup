@@ -19,12 +19,31 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     CCSize size = {_w, _h};
 
+    cb::write(std::to_string(winSize.height));
+
     if (!this->initWithColor({0, 0, 0, 105})) return false;
     m_mainLayer = CCLayer::create();
     this->addChild(m_mainLayer);
 
-    CCScale9Sprite* bg = CCScale9Sprite::create(_spr, {0.0f, 0.0f, 80.0f, 80.0f});
-    bg->setContentSize(size);
+    float fixedScaleX = 569 / winSize.width;
+    float fixedScaleY = 320 / winSize.height;
+
+    float smallerScale;
+    float biggerScale;
+    if (fixedScaleY > fixedScaleX){
+        smallerScale = fixedScaleX;
+        biggerScale = fixedScaleY;
+    }
+    else{
+        smallerScale = fixedScaleY;
+        biggerScale = fixedScaleX;
+    }
+
+    DefaultScaleMultiplier = smallerScale + (biggerScale - smallerScale);
+    cb::write(std::to_string(DefaultScaleMultiplier));
+
+    bg = CCScale9Sprite::create(_spr, {0.0f, 0.0f, 80.0f, 80.0f});
+    bg->setContentSize(GetResFixedScale({_w, _h}));
     bg->setPosition(winSize.width / 2, winSize.height / 2);
     m_mainLayer->addChild(bg);
 
@@ -33,7 +52,7 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
 
     //create close window button
     auto CloseS = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
-    CloseS->setScale(1);
+    CloseS->setScale(GetFixedScale(1));
 
     auto CloseButton = CCMenuItemSpriteExtra::create(
         CloseS,
@@ -45,7 +64,7 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
 
     m_buttonMenu->addChild(CloseButton);
 
-    CloseButton->setPosition(-_w / 2.1f, _h / 2.1f);
+    CloseButton->setPosition(GetResFixedScale({-_w, _h}, 2.1f, true));
 
     //create backups dir if doesnt exist
     geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
@@ -62,29 +81,31 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
 
     //add backup button
     CCSprite* addBSprite = CCSprite::createWithSpriteFrameName("GJ_plusBtn_001.png");
+    addBSprite->setScale(GetFixedScale(1));
     addButton = CCMenuItemSpriteExtra::create(
         addBSprite,
         nullptr,
         this,
         menu_selector(BackupsLayer::addButtonClicked)
     );
-    addButton->setPosition({164, 54});
+    addButton->setPosition(GetResFixedScale({164, 54}));
     m_buttonMenu->addChild(addButton);
 
     //add backup button
     auto deleteBSprite = CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png");
+    deleteBSprite->setScale(GetFixedScale(1));
     auto deleteButton = CCMenuItemSpriteExtra::create(
         deleteBSprite,
         nullptr,
         this,
         menu_selector(BackupsLayer::deleteButtonClicked)
     );
-    deleteButton->setPosition({164, -54});
+    deleteButton->setPosition(GetResFixedScale({164, -54}));
     m_buttonMenu->addChild(deleteButton);
 
     //create open folder button
     auto OFSprite = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
-    OFSprite->setScale(0.75f);
+    OFSprite->setScale(GetFixedScale(0.75f));
     auto OFSpriteFolder = CCSprite::createWithSpriteFrameName("folderIcon_001.png");
     OFSpriteFolder->setPosition(OFSprite->getContentSize() / 2);
     OFSpriteFolder->setScale(0.8f);
@@ -96,19 +117,19 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
         this,
         menu_selector(BackupsLayer::OpenFolder)
     );
-    OFButton->setPosition({212, -105});
+    OFButton->setPosition(GetResFixedScale({212, -105}));
     m_buttonMenu->addChild(OFButton);
 
     //add settings button
     auto settingsBSprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-    settingsBSprite->setScale(0.7f);
+    settingsBSprite->setScale(GetFixedScale(0.7f));
     auto settingsButton = CCMenuItemSpriteExtra::create(
         settingsBSprite,
         nullptr,
         this,
         menu_selector(BackupsLayer::openSettings)
     );
-    settingsButton->setPosition({209, 104});
+    settingsButton->setPosition(GetResFixedScale({209, 104}));
     m_buttonMenu->addChild(settingsButton);
 
     //add mode button
@@ -121,24 +142,26 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     autosIcon->setPosition(modeBSprite->getContentSize() / 2);
     autosIcon->setVisible(false);
     modeBSprite->addChild(autosIcon);
+    modeBSprite->setScale(GetFixedScale(1));
     auto modeButton = CCMenuItemSpriteExtra::create(
         modeBSprite,
         nullptr,
         this,
         menu_selector(BackupsLayer::changeViewMode)
     );
-    modeButton->setPosition({164, 0});
+    modeButton->setPosition(GetResFixedScale({164, 0}));
     m_buttonMenu->addChild(modeButton);
 
     //add import button
     auto importBSprite = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
+    importBSprite->setScale(GetFixedScale(1));
     auto importButton = CCMenuItemSpriteExtra::create(
         importBSprite,
         nullptr,
         this,
         menu_selector(BackupsLayer::importBackup)
     );
-    importButton->setPosition({208, 0});
+    importButton->setPosition(GetResFixedScale({208, 0}));
     m_buttonMenu->addChild(importButton);
 
     this->setKeypadEnabled(true);
@@ -215,7 +238,7 @@ void BackupsLayer::RefreshBackupsList(){
         dataPath = dataPath / "Backup.dat";
         file.open(dataPath);
         if (file){
-            BackupCell* cell = BackupCell::create(OriginCellPath, this, displayingAutos);
+            BackupCell* cell = BackupCell::create(OriginCellPath, this, displayingAutos, {308, 40});
 
             BackupsList->addObject(cell);
         }
@@ -243,7 +266,8 @@ void BackupsLayer::RefreshBackupsList(){
     label->setScale(0.7f);
     label->setPosition({140, 194});
 
-    list->setPosition({101, 64});
+    list->setPosition(GetResFixedScale({101, 64}));
+    list->setScale(GetFixedScale(1));
 
     if (BackupsList->count() == 0){
         CCLabelBMFont* noBLavel = CCLabelBMFont::create(noBUMessage.c_str(), "bigFont.fnt");
@@ -375,4 +399,28 @@ void BackupsLayer::importBackup(CCObject* object){
             "OK"
         )->show();
     }
+    
+}
+
+float BackupsLayer::GetResFixedScale(float scale, bool width){
+    auto winSize = CCDirector::sharedDirector()->getWinSize();
+    if (width){
+        return winSize.width / (569 / scale);
+    }
+    else{
+        return winSize.height / (320 / scale);
+    }
+    
+}
+
+CCSize BackupsLayer::GetResFixedScale(CCSize scale, float multiplier, bool devide, CCSize originSize){
+    CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+    if (!devide)
+        return {(winSize.width / (originSize.width / scale.width)) * multiplier, (winSize.height / (originSize.height / scale.height)) * multiplier};
+    else
+        return {(winSize.width / (originSize.width / scale.width)) / multiplier, (winSize.height / (originSize.height / scale.height)) / multiplier};
+}
+
+float BackupsLayer::GetFixedScale(float scale){
+    return scale / DefaultScaleMultiplier;
 }

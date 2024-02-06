@@ -40,12 +40,14 @@ class $modify(_OptionsLayer, OptionsLayer){
             auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
 
             auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(_OptionsLayer::OpenBackupsLayerButton));
-            button->setPosition({138, -171});
 
             auto menu = CCMenu::create();
 
             menu->addChild(button);
-            this->m_listLayer->addChild(menu);
+            this->m_listLayer->getParent()->addChild(menu);
+
+            auto winSize = CCDirector::sharedDirector()->getWinSize();
+            menu->setPosition({(winSize.width / (569 / 535.5f)), (winSize.height / (320 / 30))});
         }
     }
 
