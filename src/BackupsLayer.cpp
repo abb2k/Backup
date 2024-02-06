@@ -317,7 +317,6 @@ void BackupsLayer::changeViewMode(CCObject* object){
 }
 
 void BackupsLayer::importBackup(CCObject* object){
-    ghc::filesystem::path path;
     file::FilePickOptions options;
     options.defaultPath = Mod::get()->getSaveDir() / "Backups/Exports";
     file::FilePickOptions::Filter filterlol;
@@ -330,80 +329,70 @@ void BackupsLayer::importBackup(CCObject* object){
     options.filters = filters;
     
     file::pickFile(file::PickMode::OpenFile, options, [this](ghc::filesystem::path path){
-        pickfileRes = path;
+        if (!ghc::filesystem::exists(path)) return;
+        
+        if (path.extension() == ".gdbackup"){
+            std::string st = file::readString(path).value();
+
+            std::vector<std::string> things;
+            std::string tempString = "";
+            for (int i = 0; i < st.size(); i++)
+            {
+                if (st[i] == '\n' && st[i + 1] == '<' && st[i + 2] == '>' && st[i + 3] == ';'){
+                    i += 3;
+                    tempString = tempString.substr(0, tempString.size()-1);
+                    things.push_back(tempString);
+                    tempString = "";
+                }
+                else{
+                    tempString += st[i];
+                }
+            } 
+
+            auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            const char* Time = std::ctime(&creationTime);
+            std::string t = Time;
+
+            for (size_t i = 0; i < t.length(); i++)
+            {
+                if (t[i] == ':'){
+                    t[i] = '-';
+                }
+                if (t[i] == ' '){
+                    t[i] = '_';
+                }
+            }
+            t = t.substr(0, t.size()-1);
+            ghc::filesystem::path mycurrDir = Mod::get()->getSaveDir() / ("Backups/(Imported) -" + t);
+            Result<> res = file::createDirectory(mycurrDir);
+
+            std::string filenames[] = {
+                "Backup.dat",
+                "CCGameManager.dat",
+                "CCGameManager2.dat",
+                "CCLocalLevels.dat",
+                "CCLocalLevels2.dat"
+            };
+
+            for (int i = 0; i < things.size(); i++)
+            {
+                std::ofstream datfile(mycurrDir / filenames[i]);
+
+                datfile << things[i];
+
+                datfile.close();
+            }
+
+            RefreshBackupsList();
+        }
+        else{
+            FLAlertLayer::create(
+                "Import Failed!",
+                "Please choose a \".gdbackup\" file",
+                "OK"
+            )->show();
+        }
     });
-    if (ghc::filesystem::exists(pickfileRes)){
-        path = pickfileRes;
-        ghc::filesystem::path tempNewPath;
-        pickfileRes = tempNewPath;
-    }
-    else{
-        ghc::filesystem::path tempNewPath;
-        pickfileRes = tempNewPath;
-        return;
-    }
-
-    if (path.extension() == ".gdbackup"){
-        std::string st = file::readString(path).value();
-
-        std::vector<std::string> things;
-        std::string tempString = "";
-        for (int i = 0; i < st.size(); i++)
-        {
-            if (st[i] == '\n' && st[i + 1] == '<' && st[i + 2] == '>' && st[i + 3] == ';'){
-                i += 3;
-                tempString = tempString.substr(0, tempString.size()-1);
-                things.push_back(tempString);
-                tempString = "";
-            }
-            else{
-                tempString += st[i];
-            }
-        } 
-
-        auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        const char* Time = std::ctime(&creationTime);
-        std::string t = Time;
-
-        for (size_t i = 0; i < t.length(); i++)
-        {
-            if (t[i] == ':'){
-                t[i] = '-';
-            }
-            if (t[i] == ' '){
-                t[i] = '_';
-            }
-        }
-        t = t.substr(0, t.size()-1);
-        ghc::filesystem::path mycurrDir = Mod::get()->getSaveDir() / ("Backups/(Imported) -" + t);
-        Result<> res = file::createDirectory(mycurrDir);
-
-        std::string filenames[] = {
-            "Backup.dat",
-            "CCGameManager.dat",
-            "CCGameManager2.dat",
-            "CCLocalLevels.dat",
-            "CCLocalLevels2.dat"
-        };
-
-        for (int i = 0; i < things.size(); i++)
-        {
-            std::ofstream datfile(mycurrDir / filenames[i]);
-
-            datfile << things[i];
-
-            datfile.close();
-        }
-
-        RefreshBackupsList();
-    }
-    else{
-        FLAlertLayer::create(
-            "Import Failed!",
-            "Please choose a \".gdbackup\" file",
-            "OK"
-        )->show();
-    }
     
 }
 
