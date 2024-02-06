@@ -329,8 +329,6 @@ void BackupsLayer::importBackup(CCObject* object){
     options.filters = filters;
     
     file::pickFile(file::PickMode::OpenFile, options, [this](ghc::filesystem::path path){
-        if (!ghc::filesystem::exists(path)) return;
-        
         if (path.extension() == ".gdbackup"){
             std::string st = file::readString(path).value();
 
@@ -347,7 +345,7 @@ void BackupsLayer::importBackup(CCObject* object){
                 else{
                     tempString += st[i];
                 }
-            } 
+            }
 
             auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             const char* Time = std::ctime(&creationTime);
