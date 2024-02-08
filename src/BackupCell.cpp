@@ -156,8 +156,8 @@ void BackupCell::LoadBackup(CCObject* object){
     loadWarning = FLAlertLayer::create(
         this,
         "Warning!",
-        "Are you sure you want\nto apply \"" + Name + "\"? \nthis backup will replace your\n current save.\nthis will also restart your game.",
-        "No",               
+        "Are you sure you want\nto apply \"" + Name + "\"? \nthis backup will replace your\n current save.\nthis will also close down your game.",
+        "No",
         "Yes"
     );
     loadWarning->show();
