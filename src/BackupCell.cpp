@@ -189,8 +189,26 @@ void BackupCell::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
             res = geode::utils::file::writeString(GDAPPDATAPATH / "CCLocalLevels.dat", geode::utils::file::readString(_folderPath / "CCLocalLevels.dat").value());
             res = geode::utils::file::writeString(GDAPPDATAPATH / "CCLocalLevels2.dat", geode::utils::file::readString(_folderPath / "CCLocalLevels2.dat").value());
 
-            geode::utils::game::restart();
-            abort();
+            // TODO: mat
+            #if 0
+            if (CCApplication::sharedApplication() &&
+                (GameManager::get()->m_playLayer || GameManager::get()->m_levelEditorLayer)) {
+                log::error("Cannot restart in PlayLayer or LevelEditorLayer!");
+                return;
+            }
+            #endif
+
+            const auto workingDir = dirs::getGameDir();
+
+            wchar_t buffer[MAX_PATH];
+            GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+            const auto gdName = ghc::filesystem::path(buffer).filename().string();
+
+            // launch updater
+            const auto updaterPath = (workingDir / "GeodeUpdater.exe").string();
+            ShellExecuteA(nullptr, "open", updaterPath.c_str(), gdName.c_str(), workingDir.string().c_str(), false);
+
+            exit(0);
         }
     }
 }
