@@ -153,10 +153,16 @@ void BackupCell::DeleteMe(CCObject* object){
 }
 
 void BackupCell::LoadBackup(CCObject* object){
+    std::string message = "";
+    #ifdef GEODE_IS_ANDROID
+        message = "Are you sure you want\nto apply \"" + Name + "\"? \nthis backup will replace your\n current save.\nthis will also close down your game.";
+    #else
+        message = "Are you sure you want\nto apply \"" + Name + "\"? \nthis backup will replace your\n current save.\nthis will also restart your game.";
+    #endif
     loadWarning = FLAlertLayer::create(
         this,
         "Warning!",
-        "Are you sure you want\nto apply \"" + Name + "\"? \nthis backup will replace your\n current save.\nthis will also close down your game.",
+        message.c_str(),
         "No",
         "Yes"
     );
@@ -188,6 +194,11 @@ void BackupCell::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
 
             res = geode::utils::file::writeString(GDAPPDATAPATH / "CCLocalLevels.dat", geode::utils::file::readString(_folderPath / "CCLocalLevels.dat").value());
             res = geode::utils::file::writeString(GDAPPDATAPATH / "CCLocalLevels2.dat", geode::utils::file::readString(_folderPath / "CCLocalLevels2.dat").value());
+
+            #ifdef GEODE_IS_ANDROID
+            #else
+                game::restart();
+            #endif
 
             exit(0);
         }
