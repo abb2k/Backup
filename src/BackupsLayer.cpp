@@ -2,6 +2,7 @@
 #include <CreateBackupLayer.h>
 #include <BackupCell.h>
 #include <Geode/ui/GeodeUI.hpp>
+#include <gdbackup.h>
 
 BackupsLayer* BackupsLayer::create() {
     auto ret = new BackupsLayer();
@@ -330,22 +331,15 @@ void BackupsLayer::importBackup(CCObject* object){
     
     file::pickFile(file::PickMode::OpenFile, options, [this](ghc::filesystem::path path){
         if (path.extension() == ".gdbackup"){
-            std::string st = file::readString(path).value();
-
-            std::vector<std::string> things;
-            std::string tempString = "";
-            for (int i = 0; i < st.size(); i++)
-            {
-                if (st[i] == '\n' && st[i + 1] == '<' && st[i + 2] == '>' && st[i + 3] == ';'){
-                    i += 3;
-                    tempString = tempString.substr(0, tempString.size()-1);
-                    things.push_back(tempString);
-                    tempString = "";
-                }
-                else{
-                    tempString += st[i];
-                }
-            }
+            auto fileRes = file::readJson(path).value();
+            auto value = fileRes.as_object();
+            gdbackupFile myfile = {
+                .backupName = value["backupName"].as_string(),
+                .CCGameManager = value["CCGameManager"].as_string(),
+                .CCGameManager2 = value["CCGameManager2"].as_string(),
+                .CCLocalLevels = value["CCLocalLevels"].as_string(),
+                .CCLocalLevels2 = value["CCLocalLevels2"].as_string(),
+            };
 
             auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             const char* Time = std::ctime(&creationTime);
@@ -364,19 +358,39 @@ void BackupsLayer::importBackup(CCObject* object){
             ghc::filesystem::path mycurrDir = Mod::get()->getSaveDir() / ("Backups/(Imported) -" + t);
             Result<> res = file::createDirectory(mycurrDir);
 
-            std::string filenames[] = {
-                "Backup.dat",
-                "CCGameManager.dat",
-                "CCGameManager2.dat",
-                "CCLocalLevels.dat",
-                "CCLocalLevels2.dat"
+            typedef struct {
+                std::string fileName;
+                std::string fileData;
+            } file;
+
+            file files[] = {
+                {
+                    .fileName = "Backup.dat",
+                    .fileData = myfile.backupName
+                },
+                {
+                    .fileName = "CCGameManager.dat",
+                    .fileData = myfile.CCGameManager
+                },
+                {
+                    .fileName = "CCGameManager2.dat",
+                    .fileData = myfile.CCGameManager2
+                },
+                {
+                    .fileName = "CCLocalLevels.dat",
+                    .fileData = myfile.CCLocalLevels
+                },
+                {
+                    .fileName = "CCLocalLevels2.dat",
+                    .fileData = myfile.CCLocalLevels2
+                }
             };
 
-            for (int i = 0; i < things.size(); i++)
+            for (int i = 0; i < 5; i++)
             {
-                std::ofstream datfile(mycurrDir / filenames[i]);
+                std::ofstream datfile(mycurrDir / files[i].fileName);
 
-                datfile << things[i];
+                datfile << files[i].fileData;
 
                 datfile.close();
             }
@@ -390,6 +404,8 @@ void BackupsLayer::importBackup(CCObject* object){
                 "OK"
             )->show();
         }
+
+        
     });
     
 }

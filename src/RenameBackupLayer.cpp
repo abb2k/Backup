@@ -1,7 +1,7 @@
 
 #include "RenameBackupLayer.h"
 #include <BackupCell.h>
-
+#include <gdbackup.h>
 RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, BackupCell* cell) {
     auto ret = new RenameBackupLayer();
     if (ret && ret->init(280, 97, _parentLayer, cell, "GJ_square01.png")) {
@@ -110,7 +110,7 @@ void RenameBackupLayer::show(CCNode* parent) {
     m_mainLayer->runAction(CCEaseElasticOut::create(CCScaleTo::create(0.6f, 1.1f), 0.5f));
     this->runAction(CCFadeTo::create(0.14f, 100));
         
-    parent->addChild(this);  
+    parent->addChild(this); 
 }
 
 void RenameBackupLayer::OnExport(CCObject* object){
@@ -200,18 +200,32 @@ void RenameBackupLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
     if (exportAlert == p0 && p1){
         Result<std::vector<ghc::filesystem::path>> readBackups;
         readBackups = file::readDirectory(backupCell->_folderPath);
-        std::string currFileData = "";
+
+        gdbackupFile backup;
         for (int i = 0; i < readBackups.value().size(); i++)
         {
-            currFileData += file::readString(readBackups.value()[i]).value();
-            currFileData += "\n<>;";
+            if (i == 0)
+                backup.backupName = file::readString(readBackups.value()[i]).value();
+            else if (i == 1){
+                backup.CCGameManager = file::readString(readBackups.value()[i]).value();
+                backup.CCGameManager = backup.CCGameManager.substr(0, backup.CCGameManager.length() - 1);
+            } 
+            else if (i == 2){
+                backup.CCGameManager2 = file::readString(readBackups.value()[i]).value();
+                backup.CCGameManager2 = backup.CCGameManager2.substr(0, backup.CCGameManager2.length() - 1);
+            }
+            else if (i == 3){
+                backup.CCLocalLevels = file::readString(readBackups.value()[i]).value();
+                backup.CCLocalLevels = backup.CCLocalLevels.substr(0, backup.CCLocalLevels.length() - 1);
+            }
+            else if (i == 4){
+                backup.CCLocalLevels2 = file::readString(readBackups.value()[i]).value();
+                backup.CCLocalLevels2 = backup.CCLocalLevels2.substr(0, backup.CCLocalLevels2.length() - 1);
+            }
+            
         }
 
-        std::ofstream exportFile(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"));
-
-        exportFile << currFileData;
-
-        exportFile.close();
+        Result<> res = file::writeToJson<gdbackupFile>(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"), backup);
 
         FLAlertLayer::create(
             "Exported!",
