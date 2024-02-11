@@ -208,24 +208,25 @@ void RenameBackupLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
                 backup.backupName = file::readString(readBackups.value()[i]).value();
             else if (i == 1){
                 backup.CCGameManager = file::readString(readBackups.value()[i]).value();
-                backup.CCGameManager = backup.CCGameManager.substr(0, backup.CCGameManager.length() - 1);
+                cb::write(backup.CCGameManager);
+                backup.CCGameManager.erase(std::remove(backup.CCGameManager.begin(), backup.CCGameManager.end(), ''), backup.CCGameManager.end());
             } 
             else if (i == 2){
                 backup.CCGameManager2 = file::readString(readBackups.value()[i]).value();
-                backup.CCGameManager2 = backup.CCGameManager2.substr(0, backup.CCGameManager2.length() - 1);
+                backup.CCGameManager2.erase(std::remove(backup.CCGameManager2.begin(), backup.CCGameManager2.end(), ''), backup.CCGameManager2.end());
             }
             else if (i == 3){
                 backup.CCLocalLevels = file::readString(readBackups.value()[i]).value();
-                backup.CCLocalLevels = backup.CCLocalLevels.substr(0, backup.CCLocalLevels.length() - 1);
+                backup.CCLocalLevels.erase(std::remove(backup.CCLocalLevels.begin(), backup.CCLocalLevels.end(), ''), backup.CCLocalLevels.end());
             }
             else if (i == 4){
                 backup.CCLocalLevels2 = file::readString(readBackups.value()[i]).value();
-                backup.CCLocalLevels2 = backup.CCLocalLevels2.substr(0, backup.CCLocalLevels2.length() - 1);
+                backup.CCLocalLevels2.erase(std::remove(backup.CCLocalLevels2.begin(), backup.CCLocalLevels2.end(), ''), backup.CCLocalLevels2.end());
             }
             
         }
 
-        //Result<> res = file::writeToJson<gdbackupFile>(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"), backup);
+        Result<> res = file::writeToJson<gdbackupFile>(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"), backup);
 
         FLAlertLayer::create(
             "Exported!",
