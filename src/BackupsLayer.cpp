@@ -151,6 +151,8 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     modeButton->setPosition(GetResFixedScale({164, 0}));
     m_buttonMenu->addChild(modeButton);
 
+    #ifdef GEODE_IS_ANDROID
+    #else
     //add import button
     auto importBSprite = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
     importBSprite->setScale(GetFixedScale(1));
@@ -162,6 +164,7 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr){
     );
     importButton->setPosition(GetResFixedScale({208, 0}));
     m_buttonMenu->addChild(importButton);
+    #endif
 
     this->setKeypadEnabled(true);
     this->setTouchEnabled(true);

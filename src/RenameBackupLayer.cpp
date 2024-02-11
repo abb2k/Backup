@@ -47,6 +47,8 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
     CloseButton->setPosition(parentLayer->GetResFixedScale({-_w, _h}, 2.1f, true));
     CloseButton->setZOrder(1);
 
+    #ifdef GEODE_IS_ANDROID
+    #else
     //add export button
     auto exportBackupSprite = CCSprite::createWithSpriteFrameName("accountBtn_myLevels_001.png");
     exportBackupSprite->setScale(parentLayer->GetFixedScale(1));
@@ -58,7 +60,7 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
     );
     exportBackupButton->setPosition(parentLayer->GetResFixedScale({_w, -_h}, 2.1f, true));
     m_buttonMenu->addChild(exportBackupButton);
-    CloseButton->setZOrder(1);
+    #endif
 
     CCLabelBMFont* Label = CCLabelBMFont::create("Backup Settings", "bigFont.fnt");
     Label->setPosition(parentLayer->GetResFixedScale({285, 193}));
@@ -210,27 +212,23 @@ void RenameBackupLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
                 backup.CCGameManager = file::readString(readBackups.value()[i]).value();
                 cb::write(backup.CCGameManager);
                 backup.CCGameManager.erase(std::remove(backup.CCGameManager.begin(), backup.CCGameManager.end(), ''), backup.CCGameManager.end());
-                backup.CCGameManager.erase(std::remove(backup.CCGameManager.begin(), backup.CCGameManager.end(), ''), backup.CCGameManager.end());
             } 
             else if (i == 2){
                 backup.CCGameManager2 = file::readString(readBackups.value()[i]).value();
                 backup.CCGameManager2.erase(std::remove(backup.CCGameManager2.begin(), backup.CCGameManager2.end(), ''), backup.CCGameManager2.end());
-                backup.CCGameManager2.erase(std::remove(backup.CCGameManager2.begin(), backup.CCGameManager2.end(), ''), backup.CCGameManager2.end());
             }
             else if (i == 3){
                 backup.CCLocalLevels = file::readString(readBackups.value()[i]).value();
                 backup.CCLocalLevels.erase(std::remove(backup.CCLocalLevels.begin(), backup.CCLocalLevels.end(), ''), backup.CCLocalLevels.end());
-                backup.CCLocalLevels.erase(std::remove(backup.CCLocalLevels.begin(), backup.CCLocalLevels.end(), ''), backup.CCLocalLevels.end());
             }
             else if (i == 4){
                 backup.CCLocalLevels2 = file::readString(readBackups.value()[i]).value();
                 backup.CCLocalLevels2.erase(std::remove(backup.CCLocalLevels2.begin(), backup.CCLocalLevels2.end(), ''), backup.CCLocalLevels2.end());
-                backup.CCLocalLevels2.erase(std::remove(backup.CCLocalLevels2.begin(), backup.CCLocalLevels2.end(), ''), backup.CCLocalLevels2.end());
             }
             
         }
 
-        Result<> res = file::writeToJson<gdbackupFile>(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"), backup);
+        Result<> res = file::writeToJson(Mod::get()->getSaveDir() / ("Backups/Exports/" + backupCell->Name + ".gdbackup"), backup);
 
         FLAlertLayer::create(
             "Exported!",
