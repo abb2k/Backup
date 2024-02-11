@@ -210,18 +210,22 @@ void RenameBackupLayer::FLAlert_Clicked(FLAlertLayer* p0, bool p1){
                 backup.CCGameManager = file::readString(readBackups.value()[i]).value();
                 cb::write(backup.CCGameManager);
                 backup.CCGameManager.erase(std::remove(backup.CCGameManager.begin(), backup.CCGameManager.end(), ''), backup.CCGameManager.end());
+                backup.CCGameManager.erase(std::remove(backup.CCGameManager.begin(), backup.CCGameManager.end(), ''), backup.CCGameManager.end());
             } 
             else if (i == 2){
                 backup.CCGameManager2 = file::readString(readBackups.value()[i]).value();
                 backup.CCGameManager2.erase(std::remove(backup.CCGameManager2.begin(), backup.CCGameManager2.end(), ''), backup.CCGameManager2.end());
+                backup.CCGameManager2.erase(std::remove(backup.CCGameManager2.begin(), backup.CCGameManager2.end(), ''), backup.CCGameManager2.end());
             }
             else if (i == 3){
                 backup.CCLocalLevels = file::readString(readBackups.value()[i]).value();
                 backup.CCLocalLevels.erase(std::remove(backup.CCLocalLevels.begin(), backup.CCLocalLevels.end(), ''), backup.CCLocalLevels.end());
+                backup.CCLocalLevels.erase(std::remove(backup.CCLocalLevels.begin(), backup.CCLocalLevels.end(), ''), backup.CCLocalLevels.end());
             }
             else if (i == 4){
                 backup.CCLocalLevels2 = file::readString(readBackups.value()[i]).value();
                 backup.CCLocalLevels2.erase(std::remove(backup.CCLocalLevels2.begin(), backup.CCLocalLevels2.end(), ''), backup.CCLocalLevels2.end());
+                backup.CCLocalLevels2.erase(std::remove(backup.CCLocalLevels2.begin(), backup.CCLocalLevels2.end(), ''), backup.CCLocalLevels2.end());
             }
             
         }
