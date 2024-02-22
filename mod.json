@@ -8,8 +8,8 @@
 	"id": "abb2k.backup",
 	"name": "Backup",
 	"developer": "abb2k",
-	"description": "a mod that allows you to easily backup your save file :D",
-
+	"description": "allows you to easily backup your save file :D",
+    "repository": "https://github.com/abb2k/Backup",
 	"settings": {
 		"Auto_Backup": {
             "name": "Auto Backup",
