@@ -10,8 +10,6 @@ file(GLOB SOURCES src/*.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-include_directories(${OPENGL_INCLUDE_DIRS})
-
 if(NOT DEFINED ENV{GEODE_SDK})
   message(
     FATAL_ERROR

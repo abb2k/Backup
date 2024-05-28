@@ -6,7 +6,7 @@
 
 using namespace geode::prelude;
 
-RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, BackupCell* cell) {
+RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* const& _parentLayer, BackupCell* const& cell) {
   auto ret = new RenameBackupLayer();
   if (ret && ret->init(280, 97, _parentLayer, cell, "GJ_square01.png")) {
     ret->autorelease();
@@ -17,7 +17,7 @@ RenameBackupLayer* RenameBackupLayer::create(BackupsLayer* _parentLayer, BackupC
   return ret;
 }
 
-bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, BackupCell* cell, const char* _spr) {
+bool RenameBackupLayer::setup(BackupsLayer* const& _parentLayer, BackupCell* const& cell) {
   // create window
   auto winSize = CCDirector::sharedDirector()->getWinSize();
 
@@ -29,29 +29,11 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
   m_mainLayer = CCLayer::create();
   this->addChild(m_mainLayer);
 
-  CCScale9Sprite* bg = CCScale9Sprite::create(_spr, {0.0f, 0.0f, 80.0f, 80.0f});
-  bg->setContentSize(parentLayer->GetResFixedScale({_w, _h}));
-  bg->setPosition(winSize.width / 2, winSize.height / 2);
-  m_mainLayer->addChild(bg);
-
-  m_buttonMenu = CCMenu::create();
-  m_mainLayer->addChild(m_buttonMenu);
-
-  // create close window button
-  auto CloseS = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
-  CloseS->setScale(parentLayer->GetFixedScale(1));
-
-  auto CloseButton = CCMenuItemSpriteExtra::create(CloseS, nullptr, this, menu_selector(RenameBackupLayer::backButtonCallback));
-  CloseButton->setUserData(reinterpret_cast<void*>(this));
-  m_buttonMenu->addChild(CloseButton);
-  CloseButton->setPosition(parentLayer->GetResFixedScale({-_w, _h}, 2.1f, true));
-  CloseButton->setZOrder(1);
-
   // add export button
   auto exportBackupSprite = CCSprite::createWithSpriteFrameName("accountBtn_myLevels_001.png");
   exportBackupSprite->setScale(parentLayer->GetFixedScale(1));
   auto exportBackupButton = CCMenuItemSpriteExtra::create(exportBackupSprite, nullptr, this, menu_selector(RenameBackupLayer::OnExport));
-  exportBackupButton->setPosition(parentLayer->GetResFixedScale({_w, -_h}, 2.1f, true));
+  exportBackupButton->setPosition(parentLayer->GetResFixedScale({m_size.width, -m_size.height}, 2.1f, true));
   m_buttonMenu->addChild(exportBackupButton);
 
   CCLabelBMFont* Label = CCLabelBMFont::create("Backup Settings", "bigFont.fnt");
@@ -98,7 +80,7 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
 void RenameBackupLayer::show(CCNode* parent) {
   this->setZOrder(100);
 
-  m_mainLayer->runAction(CCEaseElasticOut::create(CCScaleTo::create(0.6f, 1.1f), 0.5f));
+  this->runAction(CCEaseElasticOut::create(CCScaleTo::create(0.6f, 1.1f), 0.5f));
   this->runAction(CCFadeTo::create(0.14f, 100));
 
   parent->addChild(this);
@@ -115,7 +97,7 @@ void RenameBackupLayer::keyBackClicked() {
   this->removeFromParentAndCleanup(true);
 }
 
-void RenameBackupLayer::backButtonCallback(CCObject* object) { keyBackClicked(); }
+void RenameBackupLayer::onClose(CCObject* object) { keyBackClicked(); }
 
 void RenameBackupLayer::DoneAndSave(CCObject* object) {
   if (NameInput->getString() != "") {

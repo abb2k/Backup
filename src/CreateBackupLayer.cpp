@@ -1,14 +1,11 @@
 #include "CreateBackupLayer.h"
 #include <BackupCell.h>
-#include <Geode/Geode.hpp>
 #include <Geode/ui/TextInput.hpp>
 #include <string>
 
-using namespace geode::prelude;
-
-CreateBackupLayer* CreateBackupLayer::create(BackupsLayer* _parentLayer) {
+CreateBackupLayer* CreateBackupLayer::create(BackupsLayer* const& _parentLayer) {
   auto ret = new CreateBackupLayer();
-  if (ret && ret->init(280, 99, _parentLayer, "GJ_square01.png")) {
+  if (ret && ret->init(280, 99, _parentLayer, "GJ_square01.png", {0.f, 0.f, 80.f, 80.f})) {
     ret->autorelease();
   } else {
     delete ret;
@@ -17,7 +14,7 @@ CreateBackupLayer* CreateBackupLayer::create(BackupsLayer* _parentLayer) {
   return ret;
 }
 
-bool CreateBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, const char* _spr) {
+bool CreateBackupLayer::setup(BackupsLayer* const& _parentLayer) {
   // create window
   auto winSize = CCDirector::sharedDirector()->getWinSize();
 
@@ -26,26 +23,6 @@ bool CreateBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, con
     return false;
   m_mainLayer = CCLayer::create();
   this->addChild(m_mainLayer);
-
-  CCScale9Sprite* bg = CCScale9Sprite::create(_spr, {0.0f, 0.0f, 80.0f, 80.0f});
-  bg->setContentSize(parentLayer->GetResFixedScale({_w, _h}));
-  bg->setPosition(winSize.width / 2, winSize.height / 2);
-  m_mainLayer->addChild(bg);
-
-  m_buttonMenu = CCMenu::create();
-  m_mainLayer->addChild(m_buttonMenu);
-
-  // create close window button
-  auto CloseS = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
-  CloseS->setScale(parentLayer->GetFixedScale(1));
-
-  auto CloseButton = CCMenuItemSpriteExtra::create(CloseS, nullptr, this, menu_selector(CreateBackupLayer::backButtonCallback));
-  CloseButton->setUserData(reinterpret_cast<void*>(this));
-
-  m_buttonMenu->addChild(CloseButton);
-
-  CloseButton->setPosition(parentLayer->GetResFixedScale({-_w, _h}, 2.1f, true));
-  CloseButton->setZOrder(1);
 
   CCLabelBMFont* Label = CCLabelBMFont::create("Create Backup", "bigFont.fnt");
   Label->setPosition(parentLayer->GetResFixedScale({285, 194}));
@@ -96,7 +73,7 @@ bool CreateBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, con
 void CreateBackupLayer::show(CCNode* parent) {
   this->setZOrder(100);
 
-  m_mainLayer->runAction(CCEaseElasticOut::create(CCScaleTo::create(0.6f, 1.1f), 0.5f));
+  this->runAction(CCEaseElasticOut::create(CCScaleTo::create(0.6f, 1.1f), 0.5f));
   this->runAction(CCFadeTo::create(0.14f, 100));
 
   auto readBackups = file::readDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
@@ -110,7 +87,7 @@ void CreateBackupLayer::keyBackClicked() {
   this->removeFromParentAndCleanup(true);
 }
 
-void CreateBackupLayer::backButtonCallback(CCObject* object) { keyBackClicked(); }
+void CreateBackupLayer::onClose(CCObject* object) { keyBackClicked(); }
 
 void CreateBackupLayer::DoneAndSave(CCObject* object) {
   std::string custom_backup_path = Mod::get()->getSettingValue<std::string>("Backup_Save_Path");

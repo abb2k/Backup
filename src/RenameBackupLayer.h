@@ -4,18 +4,18 @@
 #include <BackupsLayer.h>
 #include <include.h>
 
-class RenameBackupLayer : public FLAlertLayer, public FLAlertLayerProtocol {
+class RenameBackupLayer : public Popup<BackupsLayer* const&, BackupCell* const&>, public FLAlertLayerProtocol {
 protected:
-  virtual bool init(float _w, float _h, BackupsLayer* _parentLayer, BackupCell* cell, const char* _spr = "GJ_square01.png");
+  virtual bool setup(BackupsLayer* const& _parentLayer, BackupCell* const& cell);
 
 public:
-  static RenameBackupLayer* create(BackupsLayer* parentLayer, BackupCell* cell);
+  static RenameBackupLayer* create(BackupsLayer* const& parentLayer, BackupCell* const& cell);
 
   virtual void show(CCNode* parent);
 
   void keyBackClicked();
 
-  void backButtonCallback(CCObject* object);
+  void onClose(CCObject* object);
 
   TextInput* NameInput;
 
