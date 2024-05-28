@@ -1,23 +1,25 @@
 #pragma once
-#include <include.h>
+#include "Geode/ui/TextInput.hpp"
 #include <BackupsLayer.h>
+#include <include.h>
+#include <string>
 
-class CreateBackupLayer :  public FLAlertLayer {
+class CreateBackupLayer : public FLAlertLayer {
 protected:
-    virtual bool init(float _w, float _h,  BackupsLayer* _parentLayer, const char* _spr = "GJ_square01.png");
+  virtual bool init(float _w, float _h, BackupsLayer* _parentLayer, const char* _spr = "GJ_square01.png");
 
 public:
-    static CreateBackupLayer* create(BackupsLayer* parentLayer);
+  static CreateBackupLayer* create(BackupsLayer* parentLayer);
 
-    virtual void show(CCNode* parent);
+  virtual void show(CCNode* parent);
 
-    void keyBackClicked();
+  void keyBackClicked();
 
-    void backButtonCallback(CCObject* object);
+  void backButtonCallback(CCObject* object);
 
-    InputNode* NameInput;
+  TextInput* NameInput;
 
-    void DoneAndSave(CCObject* object);
+  void DoneAndSave(CCObject* object);
 
-    BackupsLayer* parentLayer;
+  BackupsLayer* parentLayer;
 };

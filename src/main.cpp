@@ -1,243 +1,229 @@
-#include <include.h>
-#include <Geode/modify/MenuLayer.hpp>
+#include "Geode/DefaultInclude.hpp"
+#include "Geode/cocos/cocoa/CCObject.h"
+#include "Geode/modify/Modify.hpp"
 #include <BackupsLayer.h>
+#include <Geode/loader/Setting.hpp>
+#include <Geode/loader/SettingEvent.hpp>
 #include <Geode/modify/GameManager.hpp>
+#include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/OptionsLayer.hpp>
+#include <Geode/utils/general.hpp>
+#include <include.h>
+#include <string>
 
-class $modify(_MenuLayer, MenuLayer){
-    bool init(){
-        if (!MenuLayer::init()) return false;
+struct MyMenuLayer : Modify<MyMenuLayer, MenuLayer> {
+  bool init() {
+    if (!MenuLayer::init())
+      return false;
 
-        if (!Mod::get()->getSettingValue<bool>("Button_In_Options_Menu"))
-        {
-            auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
+    if (!Mod::get()->getSettingValue<bool>("Button_In_Options_Menu")) {
+      auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
 
-            auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(_MenuLayer::OpenBackupsLayerButton));
-            button->setZOrder(-1);
+      auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(MyMenuLayer::OpenBackupsLayerButton));
+      button->setZOrder(-1);
 
-            auto menu = static_cast<CCMenu *>(this->getChildByID("right-side-menu"));
-            menu->setPositionY(menu->getPositionY() - sprite->getContentSize().height / 2);
+      auto menu = static_cast<CCMenu*>(this->getChildByID("right-side-menu"));
+      menu->setPositionY(menu->getPositionY() - sprite->getContentSize().height / 2);
 
-            menu->addChild(button);
-            menu->updateLayout();
-        }
-
-        return true;
+      menu->addChild(button);
+      menu->updateLayout();
     }
 
-    void OpenBackupsLayerButton(CCObject *target)
-    {
-        BackupsLayer::create()->show(this);
-    }
+    return true;
+  }
+
+  void OpenBackupsLayerButton(CCObject* target) { BackupsLayer::create()->show(this); }
 };
 
-class $modify(_OptionsLayer, OptionsLayer){
-    void customSetup(){
-        OptionsLayer::customSetup();
+struct MyOptionsLayer : Modify<MyOptionsLayer, OptionsLayer> {
+  void customSetup() {
+    OptionsLayer::customSetup();
 
-        if (Mod::get()->getSettingValue<bool>("Button_In_Options_Menu"))
-        {
-            auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
+    if (Mod::get()->getSettingValue<bool>("Button_In_Options_Menu")) {
+      auto sprite = CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png");
 
-            auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(_OptionsLayer::OpenBackupsLayerButton));
+      auto button = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(MyOptionsLayer::OpenBackupsLayerButton));
 
-            auto menu = CCMenu::create();
+      auto menu = CCMenu::create();
 
-            menu->addChild(button);
-            this->m_listLayer->getParent()->addChild(menu);
+      menu->addChild(button);
+      this->m_listLayer->getParent()->addChild(menu);
 
-            auto winSize = CCDirector::sharedDirector()->getWinSize();
-            menu->setPosition({(winSize.width / (569 / 535.5f)), (winSize.height / (320 / 30))});
-        }
+      auto winSize = CCDirector::sharedDirector()->getWinSize();
+      menu->setPosition({(winSize.width / (569 / 535.5f)), (winSize.height / (320 / 30))});
     }
+  }
 
-    void OpenBackupsLayerButton(CCObject *target)
-    {
-        BackupsLayer::create()->show(this);
-    }
+  void OpenBackupsLayerButton(CCObject* target) { BackupsLayer::create()->show(this); }
 };
 
-class $modify(_myGameManager, GameManager){
-    void doQuickSave(){
-        GameManager::doQuickSave();
-        if (Mod::get()->getSettingValue<bool>("Auto_Backup"))
-        {
-            geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
-            res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
+struct MyGameManager : Modify<MyGameManager, GameManager> {
+  void doQuickSave() {
+    GameManager::doQuickSave();
+    if (Mod::get()->getSettingValue<bool>("Auto_Backup")) {
+      geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
+      res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
 
-            ghc::filesystem::path pathToAutosaves = Mod::get()->getSaveDir() / "Backups/Auto-Backups";
+      ghc::filesystem::path pathToAutosaves = Mod::get()->getSaveDir() / "Backups/Auto-Backups";
 
-            auto readBackups = file::readDirectory(pathToAutosaves);
+      auto readBackups = file::readDirectory(pathToAutosaves);
 
-            int maxAmount = Mod::get()->getSettingValue<int64_t>("Max_Auto_Backups");
+      int maxAmount = Mod::get()->getSettingValue<int64_t>("Max_Auto_Backups");
 
-            typedef struct {
-                ghc::filesystem::path path;
-                std::chrono::milliseconds dateOfCreation;
-            } backupWPath;
+      typedef struct {
+        ghc::filesystem::path path;
+        std::chrono::milliseconds dateOfCreation;
+      } backupWPath;
 
-            std::vector<backupWPath> pathsWithTime;
-            
-            if (readBackups.value().size() == maxAmount)
-            {
-                for (int i = 0; i < readBackups.value().size(); i++)
-                {
-                    auto Date = ghc::filesystem::last_write_time(readBackups.value()[i]);
-                    auto DateInMili = std::chrono::duration_cast<std::chrono::milliseconds>(Date.time_since_epoch());
+      std::vector<backupWPath> pathsWithTime;
 
-                    backupWPath meRN;
-                    meRN.dateOfCreation = DateInMili;
-                    meRN.path = readBackups.value()[i];
-                    pathsWithTime.push_back(meRN);
-                    
-                    int currentMEIndex = pathsWithTime.size() - 1;
+      if (readBackups.value().size() == maxAmount) {
+        for (int i = 0; i < readBackups.value().size(); i++) {
+          auto Date = ghc::filesystem::last_write_time(readBackups.value()[i]);
+          auto DateInMili = std::chrono::duration_cast<std::chrono::milliseconds>(Date.time_since_epoch());
 
-                    backupWPath prevSave;
+          backupWPath meRN;
+          meRN.dateOfCreation = DateInMili;
+          meRN.path = readBackups.value()[i];
+          pathsWithTime.push_back(meRN);
 
-                    for (int b = 0; b < pathsWithTime.size(); b++)
-                    {
-                        if (currentMEIndex != 0){
-                            if (pathsWithTime[currentMEIndex - 1].dateOfCreation > meRN.dateOfCreation){
-                                prevSave = pathsWithTime[currentMEIndex - 1];
-                                pathsWithTime[currentMEIndex - 1] = meRN;
-                                pathsWithTime[currentMEIndex] = prevSave;
-                            }
-                        }
-                    }
-                    
-                    
-                }
-                
-                ghc::filesystem::remove_all(pathsWithTime[0].path);      
+          int currentMEIndex = pathsWithTime.size() - 1;
+
+          backupWPath prevSave;
+
+          for (int b = 0; b < pathsWithTime.size(); b++) {
+            if (currentMEIndex != 0) {
+              if (pathsWithTime[currentMEIndex - 1].dateOfCreation > meRN.dateOfCreation) {
+                prevSave = pathsWithTime[currentMEIndex - 1];
+                pathsWithTime[currentMEIndex - 1] = meRN;
+                pathsWithTime[currentMEIndex] = prevSave;
+              }
             }
-
-            auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            const char *Time = std::ctime(&creationTime);
-            std::string t = Time;
-            std::string fileName = "Backups/Auto-Backups/--AutoBackup-- " + t;
-            for (size_t i = 0; i < fileName.length(); i++)
-            {
-                if (fileName[i] == ':')
-                {
-                    fileName[i] = '-';
-                }
-                if (fileName[i] == ' ')
-                {
-                    fileName[i] = '_';
-                }
-            }
-            fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.cend());
-            ghc::filesystem::path fullpath = Mod::get()->getSaveDir() / fileName;
-            res = file::createDirectory(fullpath);
-
-            std::string tempWPath = CCFileUtils::get()->getWritablePath();
-            ghc::filesystem::path GDAPPDATAPATH(tempWPath);
-
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager.dat", fullpath);
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager2.dat", fullpath);
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels.dat", fullpath);
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels2.dat", fullpath);
-
-            ghc::filesystem::path dataPath = fullpath / "Backup.dat";
-            std::ofstream bkData(dataPath);
-
-            bkData << "Auto-Backup" << std::endl;
-            std::string timeDisp = "-" + t;
-            bkData << timeDisp << std::endl;
-
-            bkData.close();
+          }
         }
+
+        ghc::filesystem::remove_all(pathsWithTime[0].path);
+      }
+
+      auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+      const char* Time = std::ctime(&creationTime);
+      std::string t = Time;
+      std::string fileName = "Backups/Auto-Backups/--AutoBackup-- " + t;
+      for (size_t i = 0; i < fileName.length(); i++) {
+        if (fileName[i] == ':') {
+          fileName[i] = '-';
+        }
+        if (fileName[i] == ' ') {
+          fileName[i] = '_';
+        }
+      }
+      fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.cend());
+      ghc::filesystem::path fullpath = Mod::get()->getSaveDir() / fileName;
+      res = file::createDirectory(fullpath);
+
+      std::string tempWPath = CCFileUtils::get()->getWritablePath();
+      ghc::filesystem::path GDAPPDATAPATH(tempWPath);
+
+      ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager.dat", fullpath);
+      ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager2.dat", fullpath);
+      ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels.dat", fullpath);
+      ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels2.dat", fullpath);
+
+      ghc::filesystem::path dataPath = fullpath / "Backup.dat";
+      std::ofstream bkData(dataPath);
+
+      bkData << "Auto-Backup" << std::endl;
+      std::string timeDisp = "-" + t;
+      bkData << timeDisp << std::endl;
+
+      bkData.close();
     }
+  }
 };
 
-$execute
-{
-    if (Mod::get()->getSettingValue<bool>("Auto_Backup"))
-    {
-        geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
-        res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
+struct Util {
+  static void restart_game() { game::restart(); }
+};
 
-        ghc::filesystem::path pathToAutosaves = Mod::get()->getSaveDir() / "Backups/Auto-Backups";
+$execute {
+  if (Mod::get()->getSettingValue<bool>("Auto_Backup")) {
+    geode::Result<> res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups");
+    res = geode::utils::file::createDirectory(Mod::get()->getSaveDir() / "Backups/Auto-Backups");
 
-        auto readBackups = file::readDirectory(pathToAutosaves);
+    ghc::filesystem::path pathToAutosaves = Mod::get()->getSaveDir() / "Backups/Auto-Backups";
 
-        int maxAmount = Mod::get()->getSettingValue<int64_t>("Max_Auto_Backups");
+    auto readBackups = file::readDirectory(pathToAutosaves);
 
-        typedef struct {
-            ghc::filesystem::path path;
-            std::chrono::milliseconds dateOfCreation;
-        } backupWPath;
+    int maxAmount = Mod::get()->getSettingValue<int64_t>("Max_Auto_Backups");
 
-        std::vector<backupWPath> pathsWithTime;
-            
-        if (readBackups.value().size() == maxAmount)
-        {
-            for (int i = 0; i < readBackups.value().size(); i++)
-            {
-                auto Date = ghc::filesystem::last_write_time(readBackups.value()[i]);
-                auto DateInMili = std::chrono::duration_cast<std::chrono::milliseconds>(Date.time_since_epoch());
+    typedef struct {
+      ghc::filesystem::path path;
+      std::chrono::milliseconds dateOfCreation;
+    } backupWPath;
 
-                backupWPath meRN;
-                meRN.dateOfCreation = DateInMili;
-                meRN.path = readBackups.value()[i];
-                pathsWithTime.push_back(meRN);
-                    
-                int currentMEIndex = pathsWithTime.size() - 1;
+    std::vector<backupWPath> pathsWithTime;
 
-                backupWPath prevSave;
+    if (readBackups.value().size() == maxAmount) {
+      for (int i = 0; i < readBackups.value().size(); i++) {
+        auto Date = ghc::filesystem::last_write_time(readBackups.value()[i]);
+        auto DateInMili = std::chrono::duration_cast<std::chrono::milliseconds>(Date.time_since_epoch());
 
-                for (int b = 0; b < pathsWithTime.size(); b++)
-                {
-                    if (currentMEIndex != 0){
-                        if (pathsWithTime[currentMEIndex - 1].dateOfCreation > meRN.dateOfCreation){
-                            prevSave = pathsWithTime[currentMEIndex - 1];
-                            pathsWithTime[currentMEIndex - 1] = meRN;
-                            pathsWithTime[currentMEIndex] = prevSave;
-                        }
-                    }
-                }
-                    
-                    
+        backupWPath meRN;
+        meRN.dateOfCreation = DateInMili;
+        meRN.path = readBackups.value()[i];
+        pathsWithTime.push_back(meRN);
+
+        int currentMEIndex = pathsWithTime.size() - 1;
+
+        backupWPath prevSave;
+
+        for (int b = 0; b < pathsWithTime.size(); b++) {
+          if (currentMEIndex != 0) {
+            if (pathsWithTime[currentMEIndex - 1].dateOfCreation > meRN.dateOfCreation) {
+              prevSave = pathsWithTime[currentMEIndex - 1];
+              pathsWithTime[currentMEIndex - 1] = meRN;
+              pathsWithTime[currentMEIndex] = prevSave;
             }
-                
-            ghc::filesystem::remove_all(pathsWithTime[0].path);      
+          }
         }
+      }
 
-            auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            const char *Time = std::ctime(&creationTime);
-            std::string t = Time;
-            std::string fileName = "Backups/Auto-Backups/--AutoBackup-- " + t;
-            for (size_t i = 0; i < fileName.length(); i++)
-            {
-                if (fileName[i] == ':')
-                {
-                    fileName[i] = '-';
-                }
-                if (fileName[i] == ' ')
-                {
-                    fileName[i] = '_';
-                }
-            }
-            fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.cend());
-            ghc::filesystem::path fullpath = Mod::get()->getSaveDir() / fileName;
-            res = file::createDirectory(fullpath);
-
-            std::string tempWPath = CCFileUtils::get()->getWritablePath();
-            ghc::filesystem::path GDAPPDATAPATH(tempWPath);
-
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager.dat", fullpath);
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager2.dat", fullpath);
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels.dat", fullpath);
-            ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels2.dat", fullpath);
-
-            ghc::filesystem::path dataPath = fullpath / "Backup.dat";
-            std::ofstream bkData(dataPath);
-
-            bkData << "Auto-Backup" << std::endl;
-            std::string timeDisp = "-" + t;
-            bkData << timeDisp << std::endl;
-
-            bkData.close();
+      ghc::filesystem::remove_all(pathsWithTime[0].path);
     }
-    
+
+    auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    const char* Time = std::ctime(&creationTime);
+    std::string t = Time;
+    std::string fileName = "Backups/Auto-Backups/--AutoBackup-- " + t;
+    for (size_t i = 0; i < fileName.length(); i++) {
+      if (fileName[i] == ':') {
+        fileName[i] = '-';
+      }
+      if (fileName[i] == ' ') {
+        fileName[i] = '_';
+      }
+    }
+    fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.cend());
+    ghc::filesystem::path fullpath = Mod::get()->getSaveDir() / fileName;
+    res = file::createDirectory(fullpath);
+
+    std::string tempWPath = CCFileUtils::get()->getWritablePath();
+    ghc::filesystem::path GDAPPDATAPATH(tempWPath);
+
+    ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager.dat", fullpath);
+    ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager2.dat", fullpath);
+    ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels.dat", fullpath);
+    ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels2.dat", fullpath);
+
+    ghc::filesystem::path dataPath = fullpath / "Backup.dat";
+    std::ofstream bkData(dataPath);
+
+    bkData << "Auto-Backup" << std::endl;
+    std::string timeDisp = "-" + t;
+    bkData << timeDisp << std::endl;
+
+    bkData.close();
+  }
+
+  geode::listenForSettingChanges("Backup_Save_Path", +[](std::string value) { Util::restart_game(); });
 }

@@ -1,35 +1,37 @@
 #pragma once
-#include <include.h>
 #include <BackupsLayer.h>
+#include <include.h>
+#include <string>
 
 class BackupCell : public CCNode, public FLAlertLayerProtocol {
 protected:
-    virtual bool init(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize);
+  virtual bool init(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize);
 
 public:
-    static BackupCell* create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize);
+  static BackupCell* create(ghc::filesystem::path folderPath, BackupsLayer* mainLayer, bool autos, CCSize cellSize);
 
-    ghc::filesystem::path _folderPath;
+  ghc::filesystem::path _folderPath;
+  std::string Name;
+  std::string DateOfCreation;
 
-    std::string Name;
+  void DeleteMe(CCObject* object);
+  void LoadBackup(CCObject* object);
+  void EditBackup(CCObject* object);
 
-    std::string DateOfCreation;
+  bool selected;
+  BackupsLayer* mainLayer;
 
-    void DeleteMe(CCObject* object);
-    void LoadBackup(CCObject* object);
-    void EditBackup(CCObject* object);
+  CCMenu* buttonsM;
 
-    bool selected;
-    BackupsLayer* mainLayer;
+  void OnSelectedStateChanged(CCObject* object);
 
-    CCMenu* buttonsM;
+  void FLAlert_Clicked(FLAlertLayer* p0, bool p1);
 
-    void OnSelectedStateChanged(CCObject* object);
+  FLAlertLayer* deleteWarning;
+  FLAlertLayer* loadWarning;
 
-    void FLAlert_Clicked(FLAlertLayer* p0, bool p1);
+  size_t calc_dir_size(const ghc::filesystem::path& dirPath);
+  std::string format_size(size_t size);
 
-    FLAlertLayer* deleteWarning;
-    FLAlertLayer* loadWarning;
-
-    bool autos;
+  bool autos;
 };

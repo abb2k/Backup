@@ -2,23 +2,19 @@
 #include <include.h>
 
 class BackupsLayer : public FLAlertLayer, public FLAlertLayerProtocol {
-protected:
+  protected:
     virtual bool init(float _w, float _h, const char* _spr = "GJ_square01.png");
 
-public:
+  public:
     static BackupsLayer* create();
 
     virtual void show(CCNode* parent);
 
     void keyBackClicked();
-
     void backButtonCallback(CCObject* object);
-
     void addButtonClicked(CCObject* object);
     void deleteButtonClicked(CCObject* object);
-
     void openSettings(CCObject* object);
-
     void OpenFolder(CCObject* object);
 
     CCNode* parent;
@@ -28,7 +24,6 @@ public:
     GJListLayer* list = nullptr;
 
     void RefreshBackupsList();
-
     void FLAlert_Clicked(FLAlertLayer* p0, bool p1);
 
     FLAlertLayer* deleteWarning;
