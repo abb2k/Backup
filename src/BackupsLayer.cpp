@@ -1,7 +1,12 @@
 #include "BackupsLayer.h"
+#include "Geode/binding/CCMenuItemSpriteExtra.hpp"
+#include "Geode/cocos/base_nodes/Layout.hpp"
+#include "Geode/cocos/cocoa/CCGeometry.h"
+#include "Geode/cocos/cocoa/CCObject.h"
 #include <BackupCell.h>
 #include <CreateBackupLayer.h>
 #include <Geode/ui/GeodeUI.hpp>
+#include <algorithm>
 #include <gdbackup.h>
 #include <matjson.hpp>
 
@@ -119,10 +124,10 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr) {
   modeButton->setPosition(GetResFixedScale({164, 0}));
   m_buttonMenu->addChild(modeButton);
 
-  // add import button
   auto importBSprite = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
-  importBSprite->setScale(GetFixedScale(1));
   auto importButton = CCMenuItemSpriteExtra::create(importBSprite, nullptr, this, menu_selector(BackupsLayer::importBackup));
+
+  importBSprite->setScale(GetFixedScale(1));
   importButton->setPosition(GetResFixedScale({208, 0}));
   m_buttonMenu->addChild(importButton);
 
@@ -182,16 +187,19 @@ void BackupsLayer::RefreshBackupsList() {
     noBUMessage = "You don't have any\nBackups";
   }
 
-  for (int i = readBackups.value().size(); i-- > 0;) {
-    std::ifstream file;
+  if (!readBackups.has_value())
+    return;
 
-    ghc::filesystem::path dataPath = readBackups.value()[i];
-    ghc::filesystem::path OriginCellPath = dataPath;
-    dataPath = dataPath / "Backup.dat";
-    file.open(dataPath);
-    if (file) {
-      BackupCell* cell = BackupCell::create(OriginCellPath, this, displayingAutos, {308, 40});
+  if (Mod::get()->getSettingValue<bool>("Sort_By_Latest")) {
+    std::sort(readBackups.value().begin(), readBackups.value().end(), [](const ghc::filesystem::path& a, const ghc::filesystem::path& b) { return ghc::filesystem::last_write_time(a) < ghc::filesystem::last_write_time(b); });
+  } else {
+    std::sort(readBackups.value().begin(), readBackups.value().end(), [](const ghc::filesystem::path& a, const ghc::filesystem::path& b) { return ghc::filesystem::last_write_time(a) > ghc::filesystem::last_write_time(b); });
+  }
 
+  for (const auto& dataPath : readBackups.value()) {
+    ghc::filesystem::path backupDataPath = dataPath / "Backup.dat";
+    if (ghc::filesystem::exists(backupDataPath)) {
+      BackupCell* cell = BackupCell::create(dataPath, this, displayingAutos, {308, 40});
       BackupsList->addObject(cell);
     }
   }

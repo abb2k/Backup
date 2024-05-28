@@ -37,6 +37,12 @@
       "type": "string",
       "default": "",
       "filter": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\:;.,-_(){}[]!$£ %^&#~@=+"
+    },
+    "Sort_By_Latest": {
+      "name": "Sort backups from latest to oldest",
+      "description": "Sorts the backups from latest to oldest.",
+      "type": "bool",
+      "default": true
     }
   },
   "dependencies": [

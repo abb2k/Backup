@@ -59,9 +59,11 @@ bool RenameBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, Bac
   Label->setScale(0.75f);
   m_mainLayer->addChild(Label);
 
+  auto root_touch_prio = this->getTouchPriority();
   NameInput = TextInput::create(220, "Backup Name");
   NameInput->setPositionY(3);
   NameInput->setScale(0.8f);
+  NameInput->getInputNode()->setTouchPriority(root_touch_prio + 1);
   m_buttonMenu->addChild(NameInput);
 
   auto DoneS = CCScale9Sprite::create("GJ_button_01.png", {0, 0, 40, 40});
