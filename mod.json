@@ -30,6 +30,12 @@
       "description": "Moves the button of the mod to the settings menu.",
       "type": "bool",
       "default": false
+    },
+    "Backup_Save_Path": {
+      "name": "Backup Save Path",
+      "description": "The path where the backups are stored. (optional)",
+      "type": "string",
+      "default": ""
     }
   }
 }

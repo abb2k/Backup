@@ -55,6 +55,12 @@ bool CreateBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, con
   // NameInput = InputNode::create(220, "Backup Name", "bigFont.fnt", "", 12);
   NameInput->setPositionY(3);
   NameInput->setScale(0.8f);
+  
+  auto name_input_node = NameInput->getInputNode();
+  int root_touch_prio = this->getTouchPriority();
+
+  name_input_node->setTouchPriority(root_touch_prio + 1);
+
   m_buttonMenu->addChild(NameInput);
 
   auto DoneS = CCScale9Sprite::create("GJ_button_01.png", {0, 0, 40, 40});
