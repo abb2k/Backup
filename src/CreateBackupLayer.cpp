@@ -2,6 +2,7 @@
 #include <BackupCell.h>
 #include <Geode/Geode.hpp>
 #include <Geode/ui/TextInput.hpp>
+#include <string>
 
 using namespace geode::prelude;
 
@@ -55,7 +56,7 @@ bool CreateBackupLayer::init(float _w, float _h, BackupsLayer* _parentLayer, con
   // NameInput = InputNode::create(220, "Backup Name", "bigFont.fnt", "", 12);
   NameInput->setPositionY(3);
   NameInput->setScale(0.8f);
-  
+
   auto name_input_node = NameInput->getInputNode();
   int root_touch_prio = this->getTouchPriority();
 
@@ -112,6 +113,9 @@ void CreateBackupLayer::keyBackClicked() {
 void CreateBackupLayer::backButtonCallback(CCObject* object) { keyBackClicked(); }
 
 void CreateBackupLayer::DoneAndSave(CCObject* object) {
+  std::string custom_backup_path = Mod::get()->getSettingValue<std::string>("Backup_Save_Path");
+  // std::string custom_backup_path = "";
+
   if (NameInput->getString() != "") {
     auto creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     const char* Time = std::ctime(&creationTime);
@@ -125,19 +129,20 @@ void CreateBackupLayer::DoneAndSave(CCObject* object) {
         fileName[i] = '_';
       }
     }
+
     fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.cend());
-    ghc::filesystem::path fullpath = parentLayer->BackupsDir / fileName;
+    ghc::filesystem::path fullpath = !custom_backup_path.empty() ? ghc::filesystem::path(custom_backup_path) / fileName : this->parentLayer->BackupsDir / fileName;
     Result<> res = file::createDirectory(fullpath);
 
     std::string tempWPath = CCFileUtils::get()->getWritablePath();
-    ghc::filesystem::path GDAPPDATAPATH(tempWPath);
 
+    ghc::filesystem::path GDAPPDATAPATH(tempWPath);
     ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager.dat", fullpath);
     ghc::filesystem::copy(GDAPPDATAPATH / "CCGameManager2.dat", fullpath);
     ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels.dat", fullpath);
     ghc::filesystem::copy(GDAPPDATAPATH / "CCLocalLevels2.dat", fullpath);
-
     ghc::filesystem::path dataPath = fullpath / "Backup.dat";
+
     std::ofstream bkData(dataPath);
 
     bkData << NameInput->getString().c_str() << std::endl;

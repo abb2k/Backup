@@ -32,10 +32,18 @@
       "default": false
     },
     "Backup_Save_Path": {
-      "name": "Backup Save Path",
-      "description": "The path where the backups are stored. (optional)",
+      "name": "Backup Save Path\n(restarts the game)",
+      "description": "\nThe path where the backups are stored. (optional)",
       "type": "string",
-      "default": ""
+      "default": "",
+      "filter": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\:;.,-_(){}[]!$£ %^&#~@=+"
     }
-  }
+  },
+  "dependencies": [
+    {
+      "id": "geode.node-ids",
+      "version": "v1.11.0",
+      "importance": "required"
+    }
+  ]
 }

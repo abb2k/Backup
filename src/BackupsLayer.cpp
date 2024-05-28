@@ -40,8 +40,6 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr) {
   }
 
   DefaultScaleMultiplier = smallerScale + (biggerScale - smallerScale);
-  cb::write(std::to_string(DefaultScaleMultiplier));
-
   bg = CCScale9Sprite::create(_spr, {0.0f, 0.0f, 80.0f, 80.0f});
   bg->setContentSize(GetResFixedScale({_w, _h}));
   bg->setPosition(winSize.width / 2, winSize.height / 2);
@@ -121,15 +119,12 @@ bool BackupsLayer::init(float _w, float _h, const char* _spr) {
   modeButton->setPosition(GetResFixedScale({164, 0}));
   m_buttonMenu->addChild(modeButton);
 
-#ifdef GEODE_IS_ANDROID
-#else
   // add import button
   auto importBSprite = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
   importBSprite->setScale(GetFixedScale(1));
   auto importButton = CCMenuItemSpriteExtra::create(importBSprite, nullptr, this, menu_selector(BackupsLayer::importBackup));
   importButton->setPosition(GetResFixedScale({208, 0}));
   m_buttonMenu->addChild(importButton);
-#endif
 
   this->setKeypadEnabled(true);
   this->setTouchEnabled(true);
@@ -168,6 +163,9 @@ void BackupsLayer::RefreshBackupsList() {
     list->removeMeAndCleanup();
   }
 
+  std::string backups_path = Mod::get()->getSettingValue<std::string>("Backup_Save_Path");
+  ghc::filesystem::path backupPath = backups_path.empty() ? BackupsDir : ghc::filesystem::path(backups_path);
+
   CCArray* BackupsList = CCArray::create();
 
   Result<std::vector<ghc::filesystem::path>> readBackups;
@@ -175,11 +173,11 @@ void BackupsLayer::RefreshBackupsList() {
   std::string noBUMessage;
 
   if (displayingAutos) {
-    readBackups = file::readDirectory(BackupsDir / "Auto-Backups");
+    readBackups = file::readDirectory(backupPath / "Auto-Backups");
     titleLol = "Auto Backups";
     noBUMessage = "You don't have any\nAuto Backups";
   } else {
-    readBackups = file::readDirectory(BackupsDir);
+    readBackups = file::readDirectory(backupPath);
     titleLol = "Backups";
     noBUMessage = "You don't have any\nBackups";
   }
@@ -306,8 +304,8 @@ void BackupsLayer::importBackup(CCObject* object) {
       Result<> res = file::createDirectory(mycurrDir);
 
       typedef struct {
-          std::string fileName;
-          std::string fileData;
+        std::string fileName;
+        std::string fileData;
       } file;
 
       file files[] = {{.fileName = "Backup.dat", .fileData = myfile.backupName}, {.fileName = "CCGameManager.dat", .fileData = myfile.CCGameManager}, {.fileName = "CCGameManager2.dat", .fileData = myfile.CCGameManager2}, {.fileName = "CCLocalLevels.dat", .fileData = myfile.CCLocalLevels}, {.fileName = "CCLocalLevels2.dat", .fileData = myfile.CCLocalLevels2}};

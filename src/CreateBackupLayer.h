@@ -2,6 +2,7 @@
 #include "Geode/ui/TextInput.hpp"
 #include <BackupsLayer.h>
 #include <include.h>
+#include <string>
 
 class CreateBackupLayer : public FLAlertLayer {
 protected:
