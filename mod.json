@@ -7,7 +7,7 @@
   "version": "v1.0.6",
   "id": "abb2k.backup",
   "name": "Backup",
-  "developers": ["abb2k", "Bearodactyl"],
+  "developers": ["abb2k", "the_bearodactyl"],
   "description": "allows you to easily backup your save file :D",
   "repository": "https://github.com/abb2k/Backup",
   "settings": {
